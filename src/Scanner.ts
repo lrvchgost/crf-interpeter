@@ -27,5 +27,5 @@ export class Scanner {
     return this.tokens;
   }
 
-  isAtEnd() {}
+  isAtEnd() { return true }
 }
