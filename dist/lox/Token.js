@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Token = void 0;
 class Token {
     type;
+    literal;
     lexeme;
     line;
-    literal;
     start;
     length;
     constructor(type, lexeme, literal, line, start, length) {

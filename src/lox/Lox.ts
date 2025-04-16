@@ -2,11 +2,14 @@ import path from "node:path";
 import fs from "node:fs";
 import readline from "readline";
 import { Scanner } from "../Scanner";
+import {Reporter} from "./Reporter";
 
-export class Lox {
+export class Lox extends Reporter {
   hadError = false;
 
   constructor(args: string[], private sourceFolder: string) {
+    super();
+
     if (args.length > 1) {
       throw "Usage: jlox [script]";
     }
@@ -76,15 +79,5 @@ export class Lox {
     for (let token of tokens) {
       console.log(token);
     }
-  }
-
-  error(line: number, message: string) {
-    this.report(line, "", message);
-  }
-
-  report(line: number, where: string, message: string) {
-    console.log(`[line ${line}] Error ${where}: ${message}`);
-
-    this.hadError =true;
   }
 }

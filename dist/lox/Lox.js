@@ -8,10 +8,12 @@ const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const readline_1 = __importDefault(require("readline"));
 const Scanner_1 = require("../Scanner");
-class Lox {
+const Reporter_1 = require("./Reporter");
+class Lox extends Reporter_1.Reporter {
     sourceFolder;
     hadError = false;
     constructor(args, sourceFolder) {
+        super();
         this.sourceFolder = sourceFolder;
         if (args.length > 1) {
             throw "Usage: jlox [script]";
@@ -67,13 +69,6 @@ class Lox {
         for (let token of tokens) {
             console.log(token);
         }
-    }
-    error(line, message) {
-        this.report(line, "", message);
-    }
-    report(line, where, message) {
-        console.log(`[line ${line}] Error ${where}: ${message}`);
-        this.hadError = true;
     }
 }
 exports.Lox = Lox;

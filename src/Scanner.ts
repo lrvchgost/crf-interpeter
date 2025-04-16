@@ -1,7 +1,8 @@
-import { Token } from "./lox/Token";
+import { Reporter } from "./lox/Reporter";
+import { Literal, Token } from "./lox/Token";
 import { TokenType } from "./lox/TokenType";
 
-export class Scanner {
+export class Scanner extends Reporter {
   source: string;
   tokens: Token[] = [];
   // first character of lexeme
@@ -11,6 +12,8 @@ export class Scanner {
   line: number = 1;
 
   constructor(source: string) {
+    super();
+
     this.source = source;
 
     console.log(source);
@@ -20,12 +23,78 @@ export class Scanner {
     while (!this.isAtEnd()) {
       this.start = this.current;
 
-      this.scanTokens();
+      this.scanToken();
     }
 
-    this.tokens.push(new Token(TokenType.EOF, "", null, this.line, this.start, 0));
+    this.tokens.push(
+      new Token(TokenType.EOF, "", null, this.line, this.start, 0)
+    );
     return this.tokens;
   }
 
-  isAtEnd() { return true }
+  scanToken() {
+    const char: string = this.advance();
+
+    switch (char) {
+      case "(":
+        this.addToken(TokenType.LEFT_PAREN);
+        break;
+      case ")":
+        this.addToken(TokenType.RIGHT_PAREN);
+        break;
+      case "{":
+        this.addToken(TokenType.LEFT_BRACE);
+        break;
+      case "}":
+        this.addToken(TokenType.RIGHT_BRACE);
+        break;
+      case ",":
+        this.addToken(TokenType.COMMA);
+        break;
+      case ".":
+        this.addToken(TokenType.DOT);
+        break;
+      case "-":
+        this.addToken(TokenType.MINUS);
+        break;
+      case "+":
+        this.addToken(TokenType.PLUS);
+        break;
+      case ";":
+        this.addToken(TokenType.SEMICOLON);
+        break;
+      case "*":
+        this.addToken(TokenType.STAR);
+        break;
+      default:
+        this.error(this.line, "Unexpected character.");
+    }
+  }
+
+  addToken(type: TokenType): Token;
+  addToken(type: TokenType, literal: Literal): Token;
+  addToken(type: TokenType, literal?: Literal) {
+    const text = this.source.slice(this.start, this.current);
+
+    if (literal === undefined) {
+      return this.addToken(type, null);
+    }
+
+    return new Token(
+      type,
+      text,
+      literal,
+      this.line,
+      this.start,
+      this.current - this.start
+    );
+  }
+
+  advance() {
+    return this.source.charAt(this.current++);
+  }
+
+  isAtEnd() {
+    return this.current >= this.source.length;
+  }
 }

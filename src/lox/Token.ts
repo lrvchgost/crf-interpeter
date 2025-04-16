@@ -1,12 +1,12 @@
 import { TokenType } from "./TokenType";
 
-type Literal = string | number | null | undefined;
+export type Literal = string | number | null;
 
 export class Token {
   type: TokenType;
+  literal: Literal;
   lexeme: string;
   line: number;
-  literal: Literal;
   start: number;
   length: number;
 
