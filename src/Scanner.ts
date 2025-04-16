@@ -24,9 +24,6 @@ export class Scanner extends Reporter {
     while (!this.isAtEnd()) {
       this.start = this.current;
 
-      // console.log('start', this.start)
-      // console.log('='.repeat(20));
-
       this.scanToken();
     }
 
@@ -35,6 +32,24 @@ export class Scanner extends Reporter {
     );
 
     return this.tokens;
+  }
+
+  getCurrentChar() {
+    return this.source.charAt(this.current);
+  }
+
+  match(expected: string) {
+    if (this.isAtEnd()) {
+      return false;
+    }
+
+    if (this.getCurrentChar() !== expected) {
+      return false;
+    }
+
+    this.current++;
+
+    return true;
   }
 
   scanToken() {
@@ -71,9 +86,52 @@ export class Scanner extends Reporter {
       case "*":
         this.addToken(TokenType.STAR);
         break;
+
+      case "!":
+        this.addToken(this.match("=") ? TokenType.BANG_EQUAL : TokenType.BANG);
+        break;
+      case "=":
+        this.addToken(
+          this.match("=") ? TokenType.EQUAL_EQUAL : TokenType.EQUAL
+        );
+        break;
+      case "<":
+        this.addToken(this.match("=") ? TokenType.LESS_EQUAL : TokenType.LESS);
+        break;
+      case ">":
+        this.addToken(
+          this.match("=") ? TokenType.GREATER_EQUAL : TokenType.GREATER
+        );
+        break;
+
+      case "/":
+        if (this.match("/")) {
+          while (this.peek() !== "\n" && !this.isAtEnd()) {
+            this.advance();
+          }
+        } else {
+          this.addToken(TokenType.SLASH);
+        }
+        break;
+
+      case " ":
+      case "\r":
+      case "\t":
+        break;
+      case "\n":
+        this.line++;
+        break;
       default:
         this.error(this.line, "Unexpected character. " + char);
     }
+  }
+
+  peek() {
+    if (this.isAtEnd()) {
+      return "\0";
+    }
+
+    return this.getCurrentChar();
   }
 
   addToken(type: TokenType): void;

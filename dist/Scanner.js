@@ -22,6 +22,19 @@ class Scanner extends Reporter_1.Reporter {
         this.tokens.push(new Token_1.Token(TokenType_1.TokenType.EOF, "", null, this.line, this.start, 0));
         return this.tokens;
     }
+    getCurrentChar() {
+        return this.source.charAt(this.current);
+    }
+    match(expected) {
+        if (this.isAtEnd()) {
+            return false;
+        }
+        if (this.getCurrentChar() !== expected) {
+            return false;
+        }
+        this.current++;
+        return true;
+    }
     scanToken() {
         const char = this.advance();
         switch (char) {
@@ -55,9 +68,44 @@ class Scanner extends Reporter_1.Reporter {
             case "*":
                 this.addToken(TokenType_1.TokenType.STAR);
                 break;
+            case "!":
+                this.addToken(this.match("=") ? TokenType_1.TokenType.BANG_EQUAL : TokenType_1.TokenType.BANG);
+                break;
+            case "=":
+                this.addToken(this.match("=") ? TokenType_1.TokenType.EQUAL_EQUAL : TokenType_1.TokenType.EQUAL);
+                break;
+            case "<":
+                this.addToken(this.match("=") ? TokenType_1.TokenType.LESS_EQUAL : TokenType_1.TokenType.LESS);
+                break;
+            case ">":
+                this.addToken(this.match("=") ? TokenType_1.TokenType.GREATER_EQUAL : TokenType_1.TokenType.GREATER);
+                break;
+            case "/":
+                if (this.match("/")) {
+                    while (this.peek() !== "\n" && !this.isAtEnd()) {
+                        this.advance();
+                    }
+                }
+                else {
+                    this.addToken(TokenType_1.TokenType.SLASH);
+                }
+                break;
+            case " ":
+            case "\r":
+            case "\t":
+                break;
+            case "\n":
+                this.line++;
+                break;
             default:
                 this.error(this.line, "Unexpected character. " + char);
         }
+    }
+    peek() {
+        if (this.isAtEnd()) {
+            return "\0";
+        }
+        return this.getCurrentChar();
     }
     addToken(type, literal) {
         const text = this.source.slice(this.start, this.current);
