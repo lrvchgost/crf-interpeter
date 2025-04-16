@@ -16,12 +16,16 @@ export class Scanner extends Reporter {
 
     this.source = source;
 
-    console.log(source);
+    // console.log(source);
+    // console.log(source.length);
   }
 
   scanTokens() {
     while (!this.isAtEnd()) {
       this.start = this.current;
+
+      // console.log('start', this.start)
+      // console.log('='.repeat(20));
 
       this.scanToken();
     }
@@ -29,6 +33,7 @@ export class Scanner extends Reporter {
     this.tokens.push(
       new Token(TokenType.EOF, "", null, this.line, this.start, 0)
     );
+
     return this.tokens;
   }
 
@@ -67,12 +72,12 @@ export class Scanner extends Reporter {
         this.addToken(TokenType.STAR);
         break;
       default:
-        this.error(this.line, "Unexpected character.");
+        this.error(this.line, "Unexpected character. " + char);
     }
   }
 
-  addToken(type: TokenType): Token;
-  addToken(type: TokenType, literal: Literal): Token;
+  addToken(type: TokenType): void;
+  addToken(type: TokenType, literal: Literal): void;
   addToken(type: TokenType, literal?: Literal) {
     const text = this.source.slice(this.start, this.current);
 
@@ -80,13 +85,15 @@ export class Scanner extends Reporter {
       return this.addToken(type, null);
     }
 
-    return new Token(
-      type,
-      text,
-      literal,
-      this.line,
-      this.start,
-      this.current - this.start
+    this.tokens.push(
+      new Token(
+        type,
+        text,
+        literal,
+        this.line,
+        this.start,
+        this.current - this.start
+      )
     );
   }
 

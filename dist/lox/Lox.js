@@ -26,12 +26,12 @@ class Lox extends Reporter_1.Reporter {
         }
     }
     runFile(sourcePath) {
-        const filePath = node_path_1.default.join(__dirname, "../", this.sourceFolder, sourcePath);
+        const filePath = node_path_1.default.join(__dirname, "../../", this.sourceFolder, sourcePath);
         if (!node_fs_1.default.existsSync(filePath)) {
             throw `File not found ${filePath}`;
         }
         try {
-            const text = node_fs_1.default.readFileSync(filePath, "utf8");
+            const text = node_fs_1.default.readFileSync(filePath, "utf8").trim();
             this.run(text);
             if (this.hadError) {
                 process.exit(65);
@@ -66,6 +66,7 @@ class Lox extends Reporter_1.Reporter {
     run(source) {
         const scanner = new Scanner_1.Scanner(source);
         const tokens = scanner.scanTokens();
+        console.log(tokens.length);
         for (let token of tokens) {
             console.log(token);
         }

@@ -22,14 +22,14 @@ export class Lox extends Reporter {
   }
 
   runFile(sourcePath: string) {
-    const filePath = path.join(__dirname, "../", this.sourceFolder, sourcePath);
+    const filePath = path.join(__dirname, "../../", this.sourceFolder, sourcePath);
 
     if (!fs.existsSync(filePath)) {
       throw `File not found ${filePath}`;
     }
 
     try {
-      const text = fs.readFileSync(filePath, "utf8");
+      const text = fs.readFileSync(filePath, "utf8").trim();
 
       this.run(text);
 
@@ -75,6 +75,8 @@ export class Lox extends Reporter {
   run(source: string) {
     const scanner = new Scanner(source);
     const tokens = scanner.scanTokens();
+
+    console.log(tokens.length);
 
     for (let token of tokens) {
       console.log(token);

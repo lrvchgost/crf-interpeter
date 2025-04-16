@@ -13,7 +13,6 @@ class Scanner extends Reporter_1.Reporter {
     constructor(source) {
         super();
         this.source = source;
-        console.log(source);
     }
     scanTokens() {
         while (!this.isAtEnd()) {
@@ -57,7 +56,7 @@ class Scanner extends Reporter_1.Reporter {
                 this.addToken(TokenType_1.TokenType.STAR);
                 break;
             default:
-                this.error(this.line, "Unexpected character.");
+                this.error(this.line, "Unexpected character. " + char);
         }
     }
     addToken(type, literal) {
@@ -65,7 +64,7 @@ class Scanner extends Reporter_1.Reporter {
         if (literal === undefined) {
             return this.addToken(type, null);
         }
-        return new Token_1.Token(type, text, literal, this.line, this.start, this.current - this.start);
+        this.tokens.push(new Token_1.Token(type, text, literal, this.line, this.start, this.current - this.start));
     }
     advance() {
         return this.source.charAt(this.current++);
