@@ -11,12 +11,30 @@ export class Scanner extends Reporter {
   current: number = 0;
   line: number = 1;
 
+  private static keywords = new Map<string, TokenType>([
+    ["and", TokenType.AND],
+    ["class", TokenType.CLASS],
+    ["else", TokenType.ELSE],
+    ["for", TokenType.FOR],
+    ["fun", TokenType.FUN],
+    ["if", TokenType.IF],
+    ["nil", TokenType.NIL],
+    ["or", TokenType.OR],
+    ["print", TokenType.PRINT],
+    ["return", TokenType.RETURN],
+    ["super", TokenType.SUPER],
+    ["this", TokenType.THIS],
+    ["true", TokenType.TRUE],
+    ["var", TokenType.VAR],
+    ["while", TokenType.WHILE],
+  ]);
+
   constructor(source: string) {
     super();
 
     this.source = source;
 
-    // console.log(source);
+    console.log(source);
     // console.log(source.length);
   }
 
@@ -113,6 +131,9 @@ export class Scanner extends Reporter {
           this.addToken(TokenType.SLASH);
         }
         break;
+      case '"':
+        this.string();
+        break;
 
       case " ":
       case "\r":
@@ -122,7 +143,14 @@ export class Scanner extends Reporter {
         this.line++;
         break;
       default:
-        this.error(this.line, "Unexpected character. " + char);
+        if (this.isDigit(char)) {
+          this.number();
+        } else if (this.isAlpha(char)) {
+          this.identifier();
+        } else {
+          this.error(this.line, "Unexpected character. " + char);
+        }
+        break;
     }
   }
 
@@ -134,10 +162,22 @@ export class Scanner extends Reporter {
     return this.getCurrentChar();
   }
 
+  peekNext() {
+    if (this.current + 1 >= this.source.length) {
+      return "\0";
+    }
+
+    return this.source.charAt(this.current + 1);
+  }
+
+  getTextPiece(start: number, end: number) {
+    return this.source.slice(start, end);
+  }
+
   addToken(type: TokenType): void;
   addToken(type: TokenType, literal: Literal): void;
   addToken(type: TokenType, literal?: Literal) {
-    const text = this.source.slice(this.start, this.current);
+    const text = this.getTextPiece(this.start, this.current);
 
     if (literal === undefined) {
       return this.addToken(type, null);
@@ -161,5 +201,75 @@ export class Scanner extends Reporter {
 
   isAtEnd() {
     return this.current >= this.source.length;
+  }
+
+  string() {
+    while (this.peek() !== '"' && !this.isAtEnd()) {
+      if (this.peek() === "\n") {
+        this.line++;
+      }
+      this.advance();
+    }
+
+    if (this.isAtEnd()) {
+      return this.error(this.line, "Unterminated string");
+    }
+
+    this.advance();
+
+    const value = this.getTextPiece(this.start + 1, this.current - 1);
+
+    this.addToken(TokenType.STRING, value);
+  }
+
+  number() {
+    while (this.isDigit(this.peek()) && !this.isAtEnd()) {
+      this.advance();
+    }
+
+    if (this.peek() === "." && this.isDigit(this.peekNext())) {
+      this.advance();
+
+      while (this.isDigit(this.peek()) && !this.isAtEnd()) {
+        this.advance();
+      }
+    }
+
+    this.addToken(
+      TokenType.NUMBER,
+      Number(this.getTextPiece(this.start, this.current))
+    );
+  }
+
+  identifier() {
+    while (this.isAlphaNumeric(this.peek())) {
+      this.advance();
+    }
+
+    const text = this.getTextPiece(this.start, this.current);
+    let type = Scanner.keywords.get(text);
+
+    if (type === undefined) {
+      type = TokenType.IDENTIFIER;
+
+    }
+
+    this.addToken(type);
+  }
+
+  isDigit(char: string) {
+    return char >= "0" && char <= "9";
+  }
+
+  isAlpha(char: string) {
+    return (
+      (char >= "a" && char <= "z") ||
+      (char >= "A" && char <= "Z") ||
+      char === "_"
+    );
+  }
+
+  isAlphaNumeric(char: string) {
+    return this.isAlpha(char) || this.isDigit(char);
   }
 }

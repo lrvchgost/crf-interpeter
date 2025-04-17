@@ -10,9 +10,27 @@ class Scanner extends Reporter_1.Reporter {
     start = 0;
     current = 0;
     line = 1;
+    static keywords = new Map([
+        ["and", TokenType_1.TokenType.AND],
+        ["class", TokenType_1.TokenType.CLASS],
+        ["else", TokenType_1.TokenType.ELSE],
+        ["for", TokenType_1.TokenType.FOR],
+        ["fun", TokenType_1.TokenType.FUN],
+        ["if", TokenType_1.TokenType.IF],
+        ["nil", TokenType_1.TokenType.NIL],
+        ["or", TokenType_1.TokenType.OR],
+        ["print", TokenType_1.TokenType.PRINT],
+        ["return", TokenType_1.TokenType.RETURN],
+        ["super", TokenType_1.TokenType.SUPER],
+        ["this", TokenType_1.TokenType.THIS],
+        ["true", TokenType_1.TokenType.TRUE],
+        ["var", TokenType_1.TokenType.VAR],
+        ["while", TokenType_1.TokenType.WHILE],
+    ]);
     constructor(source) {
         super();
         this.source = source;
+        console.log(source);
     }
     scanTokens() {
         while (!this.isAtEnd()) {
@@ -90,6 +108,9 @@ class Scanner extends Reporter_1.Reporter {
                     this.addToken(TokenType_1.TokenType.SLASH);
                 }
                 break;
+            case '"':
+                this.string();
+                break;
             case " ":
             case "\r":
             case "\t":
@@ -98,7 +119,16 @@ class Scanner extends Reporter_1.Reporter {
                 this.line++;
                 break;
             default:
-                this.error(this.line, "Unexpected character. " + char);
+                if (this.isDigit(char)) {
+                    this.number();
+                }
+                else if (this.isAlpha(char)) {
+                    this.identifier();
+                }
+                else {
+                    this.error(this.line, "Unexpected character. " + char);
+                }
+                break;
         }
     }
     peek() {
@@ -107,8 +137,17 @@ class Scanner extends Reporter_1.Reporter {
         }
         return this.getCurrentChar();
     }
+    peekNext() {
+        if (this.current + 1 >= this.source.length) {
+            return "\0";
+        }
+        return this.source.charAt(this.current + 1);
+    }
+    getTextPiece(start, end) {
+        return this.source.slice(start, end);
+    }
     addToken(type, literal) {
-        const text = this.source.slice(this.start, this.current);
+        const text = this.getTextPiece(this.start, this.current);
         if (literal === undefined) {
             return this.addToken(type, null);
         }
@@ -119,6 +158,54 @@ class Scanner extends Reporter_1.Reporter {
     }
     isAtEnd() {
         return this.current >= this.source.length;
+    }
+    string() {
+        while (this.peek() !== '"' && !this.isAtEnd()) {
+            if (this.peek() === "\n") {
+                this.line++;
+            }
+            this.advance();
+        }
+        if (this.isAtEnd()) {
+            return this.error(this.line, "Unterminated string");
+        }
+        this.advance();
+        const value = this.getTextPiece(this.start + 1, this.current - 1);
+        this.addToken(TokenType_1.TokenType.STRING, value);
+    }
+    number() {
+        while (this.isDigit(this.peek()) && !this.isAtEnd()) {
+            this.advance();
+        }
+        if (this.peek() === "." && this.isDigit(this.peekNext())) {
+            this.advance();
+            while (this.isDigit(this.peek()) && !this.isAtEnd()) {
+                this.advance();
+            }
+        }
+        this.addToken(TokenType_1.TokenType.NUMBER, Number(this.getTextPiece(this.start, this.current)));
+    }
+    identifier() {
+        while (this.isAlphaNumeric(this.peek())) {
+            this.advance();
+        }
+        const text = this.getTextPiece(this.start, this.current);
+        let type = Scanner.keywords.get(text);
+        if (type === undefined) {
+            type = TokenType_1.TokenType.IDENTIFIER;
+        }
+        this.addToken(type);
+    }
+    isDigit(char) {
+        return char >= "0" && char <= "9";
+    }
+    isAlpha(char) {
+        return ((char >= "a" && char <= "z") ||
+            (char >= "A" && char <= "Z") ||
+            char === "_");
+    }
+    isAlphaNumeric(char) {
+        return this.isAlpha(char) || this.isDigit(char);
     }
 }
 exports.Scanner = Scanner;

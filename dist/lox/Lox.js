@@ -66,7 +66,6 @@ class Lox extends Reporter_1.Reporter {
     run(source) {
         const scanner = new Scanner_1.Scanner(source);
         const tokens = scanner.scanTokens();
-        console.log(tokens.length);
         for (let token of tokens) {
             console.log(token);
         }
