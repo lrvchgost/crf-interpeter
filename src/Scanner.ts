@@ -1,8 +1,9 @@
-import { Reporter } from "./lox/Reporter";
+import {Lox} from "./lox/Lox";
+// import { Reporter } from "./lox/Reporter";
 import { Literal, Token } from "./lox/Token";
 import { TokenType } from "./lox/TokenType";
 
-export class Scanner extends Reporter {
+export class Scanner {
   source: string;
   tokens: Token[] = [];
   // first character of lexeme
@@ -30,11 +31,9 @@ export class Scanner extends Reporter {
   ]);
 
   constructor(source: string) {
-    super();
-
     this.source = source;
 
-    console.log(source);
+    // console.log(source);
     // console.log(source.length);
   }
 
@@ -148,7 +147,7 @@ export class Scanner extends Reporter {
         } else if (this.isAlpha(char)) {
           this.identifier();
         } else {
-          this.error(this.line, "Unexpected character. " + char);
+          Lox.error(this.line, "Unexpected character. " + char);
         }
         break;
     }
@@ -212,7 +211,7 @@ export class Scanner extends Reporter {
     }
 
     if (this.isAtEnd()) {
-      return this.error(this.line, "Unterminated string");
+      return Lox.error(this.line, "Unterminated string");
     }
 
     this.advance();

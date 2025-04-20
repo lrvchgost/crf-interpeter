@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Scanner = void 0;
-const Reporter_1 = require("./lox/Reporter");
+const Lox_1 = require("./lox/Lox");
 const Token_1 = require("./lox/Token");
 const TokenType_1 = require("./lox/TokenType");
-class Scanner extends Reporter_1.Reporter {
+class Scanner {
     source;
     tokens = [];
     start = 0;
@@ -28,9 +28,7 @@ class Scanner extends Reporter_1.Reporter {
         ["while", TokenType_1.TokenType.WHILE],
     ]);
     constructor(source) {
-        super();
         this.source = source;
-        console.log(source);
     }
     scanTokens() {
         while (!this.isAtEnd()) {
@@ -126,7 +124,7 @@ class Scanner extends Reporter_1.Reporter {
                     this.identifier();
                 }
                 else {
-                    this.error(this.line, "Unexpected character. " + char);
+                    Lox_1.Lox.error(this.line, "Unexpected character. " + char);
                 }
                 break;
         }
@@ -167,7 +165,7 @@ class Scanner extends Reporter_1.Reporter {
             this.advance();
         }
         if (this.isAtEnd()) {
-            return this.error(this.line, "Unterminated string");
+            return Lox_1.Lox.error(this.line, "Unterminated string");
         }
         this.advance();
         const value = this.getTextPiece(this.start + 1, this.current - 1);

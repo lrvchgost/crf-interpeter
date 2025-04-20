@@ -8,12 +8,14 @@ const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const readline_1 = __importDefault(require("readline"));
 const Scanner_1 = require("../Scanner");
-const Reporter_1 = require("./Reporter");
-class Lox extends Reporter_1.Reporter {
+const Parser_1 = require("../Parser");
+const astPrinter_1 = require("./astPrinter");
+const Token_1 = require("./Token");
+const TokenType_1 = require("./TokenType");
+class Lox {
     sourceFolder;
-    hadError = false;
+    static hadError = false;
     constructor(args, sourceFolder) {
-        super();
         this.sourceFolder = sourceFolder;
         if (args.length > 1) {
             throw "Usage: jlox [script]";
@@ -33,7 +35,7 @@ class Lox extends Reporter_1.Reporter {
         try {
             const text = node_fs_1.default.readFileSync(filePath, "utf8").trim();
             this.run(text);
-            if (this.hadError) {
+            if (Lox.hadError) {
                 process.exit(65);
             }
         }
@@ -61,14 +63,39 @@ class Lox extends Reporter_1.Reporter {
             text += line + "\n";
         }
         this.run(text);
-        this.hadError = false;
+        Lox.hadError = false;
+    }
+    static error(arg, message) {
+        if (typeof arg === "number") {
+            Lox.report(arg, "", message);
+        }
+        if (arg instanceof Token_1.Token) {
+            if (arg.type === TokenType_1.TokenType.EOF) {
+                Lox.report(arg.line, " at end", message);
+            }
+            else {
+                Lox.report(arg.line, " at '" + arg.lexeme + "'", message);
+            }
+        }
+    }
+    static report(line, where, message) {
+        console.log(`[line ${line}] Error ${where}: ${message}`);
+        Lox.hadError = true;
     }
     run(source) {
         const scanner = new Scanner_1.Scanner(source);
         const tokens = scanner.scanTokens();
-        for (let token of tokens) {
-            console.log(token);
+        const parser = new Parser_1.Parser(tokens);
+        const expr = parser.parse();
+        console.log(Lox.hadError);
+        console.log(expr);
+        if (Lox.hadError) {
+            return;
         }
+        if (!expr) {
+            return;
+        }
+        console.log(new astPrinter_1.AstPrinter().print(expr));
     }
 }
 exports.Lox = Lox;

@@ -2,14 +2,16 @@ import path from "node:path";
 import fs from "node:fs";
 import readline from "readline";
 import { Scanner } from "../Scanner";
-import {Reporter} from "./Reporter";
+// import {Reporter} from "./Reporter";
+import {Parser} from "../Parser";
+import {AstPrinter} from "./astPrinter";
+import {Token} from "./Token";
+import {TokenType} from "./TokenType";
 
-export class Lox extends Reporter {
-  hadError = false;
-
+export class Lox {
+  static hadError = false;
+  
   constructor(args: string[], private sourceFolder: string) {
-    super();
-
     if (args.length > 1) {
       throw "Usage: jlox [script]";
     }
@@ -33,7 +35,7 @@ export class Lox extends Reporter {
 
       this.run(text);
 
-      if (this.hadError) {
+      if (Lox.hadError) {
         process.exit(65);
       }
     } catch (error) {
@@ -68,18 +70,55 @@ export class Lox extends Reporter {
     }
 
     this.run(text);
-    this.hadError = false;
+    Lox.hadError = false;
     // rl.close();
+  }
+
+  static error(line: number, message: string): void;
+  static error(token: Token, message: string): void;
+  static error(arg: number | Token, message: string) {
+    if (typeof arg === "number") {
+      Lox.report(arg, "", message);
+    }
+
+    if (arg instanceof Token) {
+      if (arg.type === TokenType.EOF) {
+        Lox.report(arg.line, " at end", message);
+      } else {
+        Lox.report(arg.line, " at '" + arg.lexeme + "'", message);
+      }
+    }
+  }
+
+  static report(line: number, where: string, message: string) {
+    console.log(`[line ${line}] Error ${where}: ${message}`);
+
+    Lox.hadError = true;
   }
 
   run(source: string) {
     const scanner = new Scanner(source);
     const tokens = scanner.scanTokens();
+    const parser = new Parser(tokens);
 
-    // console.log(tokens.length);
+    const expr = parser.parse();
 
-    for (let token of tokens) {
-      console.log(token);
+    console.log(Lox.hadError);
+    console.log(expr);
+
+    if (Lox.hadError) {
+      return;
     }
+
+    if (!expr) {
+      return;
+    }
+
+    console.log(new AstPrinter().print(expr));
+
+
+    // for (let token of tokens) {
+    //   console.log(token);
+    // }
   }
 }
