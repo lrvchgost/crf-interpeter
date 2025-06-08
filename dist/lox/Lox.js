@@ -9,12 +9,14 @@ const node_fs_1 = __importDefault(require("node:fs"));
 const readline_1 = __importDefault(require("readline"));
 const Scanner_1 = require("../Scanner");
 const Parser_1 = require("../Parser");
-const astPrinter_1 = require("./astPrinter");
 const Token_1 = require("./Token");
 const TokenType_1 = require("./TokenType");
+const interpreter_1 = require("./interpreter");
 class Lox {
     sourceFolder;
     static hadError = false;
+    static hadRuntimeError = false;
+    interpreter = new interpreter_1.Interpreter();
     constructor(args, sourceFolder) {
         this.sourceFolder = sourceFolder;
         if (args.length > 1) {
@@ -37,6 +39,9 @@ class Lox {
             this.run(text);
             if (Lox.hadError) {
                 process.exit(65);
+            }
+            if (Lox.hadRuntimeError) {
+                process.exit(70);
             }
         }
         catch (error) {
@@ -87,7 +92,6 @@ class Lox {
         const tokens = scanner.scanTokens();
         const parser = new Parser_1.Parser(tokens);
         const expr = parser.parse();
-        console.log(Lox.hadError);
         console.log(expr);
         if (Lox.hadError) {
             return;
@@ -95,7 +99,11 @@ class Lox {
         if (!expr) {
             return;
         }
-        console.log(new astPrinter_1.AstPrinter().print(expr));
+        this.interpreter.interpret(expr);
+    }
+    static runtimeError(error) {
+        console.error(`${error.message} [line ${error.token.line}]`);
+        Lox.hadRuntimeError = true;
     }
 }
 exports.Lox = Lox;

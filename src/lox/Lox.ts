@@ -4,12 +4,16 @@ import readline from "readline";
 import { Scanner } from "../Scanner";
 // import {Reporter} from "./Reporter";
 import {Parser} from "../Parser";
-import {AstPrinter} from "./astPrinter";
+// import {AstPrinter} from "./astPrinter";
 import {Token} from "./Token";
 import {TokenType} from "./TokenType";
+import {RuntimeError} from "./error";
+import {Interpreter} from "./interpreter";
 
 export class Lox {
   static hadError = false;
+  static hadRuntimeError = false;
+  interpreter = new Interpreter();
   
   constructor(args: string[], private sourceFolder: string) {
     if (args.length > 1) {
@@ -37,6 +41,9 @@ export class Lox {
 
       if (Lox.hadError) {
         process.exit(65);
+      }
+      if (Lox.hadRuntimeError) {
+        process.exit(70);
       }
     } catch (error) {
       throw error;
@@ -103,7 +110,7 @@ export class Lox {
 
     const expr = parser.parse();
 
-    console.log(Lox.hadError);
+    // console.log(Lox.hadError);
     console.log(expr);
 
     if (Lox.hadError) {
@@ -114,11 +121,11 @@ export class Lox {
       return;
     }
 
-    console.log(new AstPrinter().print(expr));
+    this.interpreter.interpret(expr);
+  }
 
-
-    // for (let token of tokens) {
-    //   console.log(token);
-    // }
+  static runtimeError(error: RuntimeError) {
+    console.error(`${error.message} [line ${error.token.line}]`);
+    Lox.hadRuntimeError = true;
   }
 }

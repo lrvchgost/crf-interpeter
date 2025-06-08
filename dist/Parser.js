@@ -107,6 +107,22 @@ class Parser {
         }
         throw new ParseError("Unrecognized TokenType " + this.peek());
     }
+    statement() {
+        if (this.match(TokenType_1.TokenType.PRINT)) {
+            return this.printStatement();
+        }
+        return this.expressionStatement();
+    }
+    printStatement() {
+        const expr = this.expression();
+        this.consume(TokenType_1.TokenType.SEMICOLON, 'Expect ";" after value');
+        return new Expr_1.Print(expr);
+    }
+    expressionStatement() {
+        const expr = this.expression();
+        this.consume(TokenType_1.TokenType.SEMICOLON, 'Expect ";" after value');
+        return new Expr_1.Expression(expr);
+    }
     consume(type, message) {
         if (this.check(type)) {
             return this.advance();
@@ -139,13 +155,11 @@ class Parser {
         }
     }
     parse() {
-        try {
-            return this.expression();
+        const statemets = [];
+        while (!this.isAtEnd()) {
+            statemets.push(this.statement());
         }
-        catch (error) {
-            console.error(error);
-            return null;
-        }
+        return statemets;
     }
 }
 exports.Parser = Parser;

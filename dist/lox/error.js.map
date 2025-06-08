@@ -1,0 +1,1 @@
+{"version":3,"file":"error.js","sourceRoot":"","sources":["../../src/lox/error.ts"],"names":[],"mappings":";;;AAEA,MAAa,YAAa,SAAQ,KAAK;IACrC,KAAK,CAAQ;IAEb,YAAY,KAAY,EAAE,OAAe;QACvC,KAAK,CAAC,OAAO,CAAC,CAAC;QAEf,IAAI,CAAC,KAAK,GAAG,KAAK,CAAC;IACrB,CAAC;CACF;AARD,oCAQC"}

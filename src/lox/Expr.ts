@@ -1,4 +1,3 @@
-
 import { Token } from './Token';
 
 
@@ -7,14 +6,19 @@ export type Visitor<T> = {
 	visitGrouping: (grouping: Grouping) => T;
 	visitLiteral: (literal: Literal) => T;
 	visitUnary: (unary: Unary) => T;
+	visitExpression: (expression: Expression) => T;
+	visitPrint: (print: Print) => T;
 
 }
 
 abstract class AST {
-  abstract visit<T>(visitor: Visitor<T>): T
+    abstract visit<T>(visitor: Visitor<T>): T
 }
 
 export type Expr = Binary | Grouping | Literal | Unary;
+
+export type Stmt = Expression | Print;
+
 
 export class Binary extends AST {
 	left: Expr;
@@ -24,10 +28,9 @@ export class Binary extends AST {
 	constructor(left: Expr, operator: Token, right: Expr) {
 		super();
 
-		this.left= left;
-		this.operator= operator;
-		this.right= right;
-
+		this.left = left;
+		this.operator = operator;
+		this.right = right;
 	}
 
     visit<T>(visitor: Visitor<T>) {
@@ -41,8 +44,7 @@ export class Grouping extends AST {
 	constructor(expression: Expr) {
 		super();
 
-		this.expression= expression;
-
+		this.expression = expression;
 	}
 
     visit<T>(visitor: Visitor<T>) {
@@ -56,8 +58,7 @@ export class Literal extends AST {
 	constructor(value: number | string | boolean | null) {
 		super();
 
-		this.value= value;
-
+		this.value = value;
 	}
 
     visit<T>(visitor: Visitor<T>) {
@@ -72,13 +73,41 @@ export class Unary extends AST {
 	constructor(operator: Token, right: Expr) {
 		super();
 
-		this.operator= operator;
-		this.right= right;
-
+		this.operator = operator;
+		this.right = right;
 	}
 
     visit<T>(visitor: Visitor<T>) {
         return visitor.visitUnary(this);
+    }
+}
+
+
+export class Expression extends AST {
+	expression: Expr;
+
+	constructor(expression: Expr) {
+		super();
+
+		this.expression = expression;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitExpression(this);
+    }
+}
+
+export class Print extends AST {
+	expression: Expr;
+
+	constructor(expression: Expr) {
+		super();
+
+		this.expression = expression;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitPrint(this);
     }
 }
 

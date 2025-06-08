@@ -1,4 +1,4 @@
-import { Binary, Grouping, Literal, Unary, Expr } from "./lox/Expr";
+import { Binary, Grouping, Literal, Unary, Expr, Stmt, Print, Expression } from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
 import { Token } from "./lox/Token";
@@ -150,6 +150,30 @@ export class Parser {
     throw new ParseError("Unrecognized TokenType " + this.peek());
   }
 
+  statement() {
+    if (this.match(TokenType.PRINT)) {
+      return this.printStatement();
+    }
+
+    return this.expressionStatement();
+  }
+
+  printStatement() {
+    const expr = this.expression();
+
+    this.consume(TokenType.SEMICOLON, 'Expect ";" after value');
+
+    return new Print(expr);
+  }
+
+  expressionStatement() {
+    const expr = this.expression();
+
+    this.consume(TokenType.SEMICOLON, 'Expect ";" after value');
+
+    return new Expression(expr);
+  }
+
   consume(type: TokenType, message: string) {
     if (this.check(type)) {
       return this.advance();
@@ -190,11 +214,18 @@ export class Parser {
   }
 
   parse() {
-    try {
-      return this.expression();
-    } catch (error) {
-      console.error(error);
-      return null;
+    const statemets: Stmt[] = [];
+
+    while (!this.isAtEnd()) {
+      statemets.push(this.statement());
     }
+
+    return statemets;
+    // try {
+    //   return this.expression();
+    // } catch (error) {
+    //   console.error(error);
+    //   return null;
+    // }
   }
 }

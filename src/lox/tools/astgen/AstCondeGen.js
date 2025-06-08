@@ -3,8 +3,97 @@ import path from "path";
 
 const literal = "number | string | boolean | null";
 
-const astConfig = {
-  output: "Expr.ts",
+
+const defineAst = (astConfig) => {
+  const defineConstuctor = (params) => {
+    let result = "";
+
+    for (let p of params) {
+      const [name, type] = p.split(":");
+      result += `\n\t\tthis.${name.trim()} = ${name.trim()};`;
+    }
+
+    return result;
+  };
+
+  const defineType = (params) => {
+    let result = "";
+
+    for (let p of params) {
+      const [name, type] = p.split(":");
+      result += `\t${name.trim()}: ${type.trim()};\n`;
+    }
+
+    return result;
+  };
+
+  const defineClasses = (config) => {
+    let cl = "";
+    for (let c of config.classes) {
+      const [name, params] = c.split("=");
+      cl += `export class ${name.trim()} extends AST {
+${defineType(params.split(","))}
+\tconstructor(${params.trim()}) {
+\t\tsuper();
+${defineConstuctor(params.split(","))}
+\t}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visit${name.trim()}(this);
+    }
+}\n\n`;
+    }
+
+    return cl;
+  };
+
+  const defintVisitorMethods = (config) => {
+    let result = "";
+
+    for (let c of config.classes) {
+      const name = c.split("=")[0].trim();
+
+      result += `\tvisit${name}: (${name.toLowerCase()}: ${name}) => T;\n`;
+    }
+
+    return result;
+  };
+
+  const defineVisitorInterface = (astConfig) => {
+    const type = `
+export type Visitor<T> = {
+${astConfig.map((config) => defintVisitorMethods(config)).join('')}
+}`;
+
+    return type;
+  };
+
+const generateTypes = (config) => {
+  return `export type ${config.output} = ${config.classes
+    .map((str) => str.split("=")[0].trim())
+    .join(" | ")};
+`
+};
+
+  const base = `import { Token } from './Token';
+
+${defineVisitorInterface(astConfig)}
+
+abstract class AST {
+    abstract visit<T>(visitor: Visitor<T>): T
+}
+
+${astConfig.map((config) => generateTypes(config)).join('\n')}
+
+${astConfig.map((config) => defineClasses(config)).join('\n')}`;
+
+  const __dirname = path.resolve(path.dirname(""));
+
+  fs.writeFileSync(path.join(__dirname, `../../Expr.ts`), base);
+};
+
+const exprConfig = {
+  output: "Expr",
   classes: [
     "Binary   = left: Expr, operator: Token, right: Expr",
     "Grouping = expression: Expr",
@@ -13,87 +102,12 @@ const astConfig = {
   ],
 };
 
-
-const defineConstuctor = (params) => {
-  let result = '';
-
-  for (let p of params) {
-    const [name, type] = p.split(':');
-    result += `\t\tthis.${name.trim()}= ${name.trim()};\n`
-  }
-
-  return result;
-}
-
-const defineType = (params) => {
-  let result = '';
-
-  for (let p of params) {
-    const [name, type] = p.split(':');
-    result += `\t${name.trim()}: ${type.trim()};\n`
-  }
-
-  return result;
-}
-
-const defineClasses = () => {
-  let cl = "";
-  for (let c of astConfig.classes) {
-    const [name, params] = c.split("=");
-    cl += `export class ${name.trim()} extends AST {
-${defineType(params.split(','))}
-\tconstructor(${params.trim()}) {
-\t\tsuper();
-
-${defineConstuctor(params.split(','))}
-\t}
-
-    visit<T>(visitor: Visitor<T>) {
-        return visitor.visit${name.trim()}(this);
-    }
-}\n\n`;
-  }
-
-  return cl;
+const stmtConfig = {
+  output: "Stmt",
+  classes: [
+    "Expression = expression: Expr",
+    "Print = expression: Expr",
+  ],
 };
 
-const defintVisitorMethods = () => {
-  let result = '';
-
-  for (let c of astConfig.classes) {
-    const name = c.split('=')[0].trim();
-
-    result += `\tvisit${name}: (${name.toLowerCase()}: ${name}) => T;\n`
-  }
-
-  return result;
-
-}
-
-const defineVisitorInterface = () => {
-  const type = `
-export type Visitor<T> = {
-${defintVisitorMethods()}
-}`
-
-  return type;
-}
-
-const base = `
-import { Token } from './Token';
-
-${defineVisitorInterface()}
-
-abstract class AST {
-  abstract visit<T>(visitor: Visitor<T>): T
-}
-
-export type Expr = ${astConfig.classes
-  .map((str) => str.split("=")[0].trim())
-  .join(" | ")};
-
-${defineClasses()}`;
-
-const __dirname = path.resolve(path.dirname(""));
-
-fs.writeFileSync(path.join(__dirname, `../../${astConfig.output}`), base);
+defineAst([exprConfig, stmtConfig]);
