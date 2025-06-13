@@ -147,7 +147,7 @@ export class Scanner {
         } else if (this.isAlpha(char)) {
           this.identifier();
         } else {
-          Lox.error(this.line, "Unexpected character. " + char);
+          Lox.error(this.line, "[Scanner]: Unexpected character. " + char);
         }
         break;
     }

@@ -124,7 +124,7 @@ class Scanner {
                     this.identifier();
                 }
                 else {
-                    Lox_1.Lox.error(this.line, "Unexpected character. " + char);
+                    Lox_1.Lox.error(this.line, "[Scanner]: Unexpected character. " + char);
                 }
                 break;
         }

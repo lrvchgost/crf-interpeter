@@ -11,7 +11,8 @@ const defineAst = (astConfig) => {
         let result = "";
         for (let p of params) {
             const [name, type] = p.split(":");
-            result += `\n\t\tthis.${name.trim()} = ${name.trim()};`;
+            const n = name.trim().endsWith('?') ? name.trim().slice(0, -1) : name.trim();
+            result += `\n\t\tthis.${n} = ${n};`;
         }
         return result;
     };
@@ -45,7 +46,7 @@ ${defineConstuctor(params.split(","))}
         let result = "";
         for (let c of config.classes) {
             const name = c.split("=")[0].trim();
-            result += `\tvisit${name}: (${name.toLowerCase()}: ${name}) => T;\n`;
+            result += `\tvisit${name}: (${name.toLowerCase()}Node: ${name}) => T;\n`;
         }
         return result;
     };
@@ -83,6 +84,7 @@ const exprConfig = {
         "Grouping = expression: Expr",
         `Literal  = value: ${literal}`,
         "Unary    = operator: Token, right: Expr",
+        "Variable = name: Token",
     ],
 };
 const stmtConfig = {
@@ -90,6 +92,7 @@ const stmtConfig = {
     classes: [
         "Expression = expression: Expr",
         "Print = expression: Expr",
+        "Var = name: Token, initializer?: Expr",
     ],
 };
 defineAst([exprConfig, stmtConfig]);

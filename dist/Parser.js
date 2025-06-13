@@ -15,6 +15,18 @@ class Parser {
     expression() {
         return this.equality();
     }
+    declaration() {
+        try {
+            if (this.match(TokenType_1.TokenType.VAR)) {
+                return this.varDeclaration();
+            }
+            return this.statement();
+        }
+        catch (error) {
+            this.synchronize();
+            return;
+        }
+    }
     equality() {
         let expr = this.comparision();
         while (this.match(TokenType_1.TokenType.BANG_EQUAL, TokenType_1.TokenType.EQUAL_EQUAL)) {
@@ -100,6 +112,9 @@ class Parser {
         if (this.match(TokenType_1.TokenType.NUMBER, TokenType_1.TokenType.STRING)) {
             return new Expr_1.Literal(this.previous().literal);
         }
+        if (this.match(TokenType_1.TokenType.IDENTIFIER)) {
+            return new Expr_1.Var(this.previous());
+        }
         if (this.match(TokenType_1.TokenType.LEFT_PAREN)) {
             const expr = this.expression();
             this.consume(TokenType_1.TokenType.RIGHT_PAREN, "Expect ')' after expression");
@@ -117,6 +132,15 @@ class Parser {
         const expr = this.expression();
         this.consume(TokenType_1.TokenType.SEMICOLON, 'Expect ";" after value');
         return new Expr_1.Print(expr);
+    }
+    varDeclaration() {
+        const name = this.consume(TokenType_1.TokenType.IDENTIFIER, "Expect variable name");
+        let initializer;
+        if (this.match(TokenType_1.TokenType.EQUAL)) {
+            initializer = this.expression();
+        }
+        this.consume(TokenType_1.TokenType.SEMICOLON, "Expect ';' after variable declaration");
+        return new Expr_1.Var(name, initializer);
     }
     expressionStatement() {
         const expr = this.expression();
@@ -157,7 +181,8 @@ class Parser {
     parse() {
         const statements = [];
         while (!this.isAtEnd()) {
-            statements.push(this.statement());
+            const declaration = this.declaration();
+            declaration && statements.push(declaration);
         }
         return statements;
     }

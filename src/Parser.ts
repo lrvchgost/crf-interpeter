@@ -1,4 +1,14 @@
-import { Binary, Grouping, Literal, Unary, Expr, Stmt, Print, Expression } from "./lox/Expr";
+import {
+  Binary,
+  Grouping,
+  Literal,
+  Unary,
+  Expr,
+  Stmt,
+  Print,
+  Expression,
+  Var,
+} from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
 import { Token } from "./lox/Token";
@@ -16,6 +26,18 @@ export class Parser {
 
   expression(): Expr {
     return this.equality();
+  }
+
+  declaration() {
+    try {
+      if (this.match(TokenType.VAR)) {
+        return this.varDeclaration();
+      }
+      return this.statement();
+    } catch (error) {
+      this.synchronize();
+      return;
+    }
   }
 
   equality(): Expr {
@@ -141,6 +163,10 @@ export class Parser {
       return new Literal(this.previous().literal);
     }
 
+    if (this.match(TokenType.IDENTIFIER)) {
+      return new Var(this.previous());
+    }
+
     if (this.match(TokenType.LEFT_PAREN)) {
       const expr = this.expression();
       this.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression");
@@ -164,6 +190,19 @@ export class Parser {
     this.consume(TokenType.SEMICOLON, 'Expect ";" after value');
 
     return new Print(expr);
+  }
+
+  varDeclaration() {
+    const name = this.consume(TokenType.IDENTIFIER, "Expect variable name");
+
+    let initializer: Expr | undefined;
+
+    if (this.match(TokenType.EQUAL)) {
+      initializer = this.expression();
+    }
+
+    this.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration");
+    return new Var(name, initializer);
   }
 
   expressionStatement() {
@@ -217,7 +256,9 @@ export class Parser {
     const statements: Stmt[] = [];
 
     while (!this.isAtEnd()) {
-      statements.push(this.statement());
+      const declaration = this.declaration();
+
+      declaration && statements.push(declaration);
     }
 
     return statements;

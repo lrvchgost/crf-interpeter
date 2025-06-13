@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Print = exports.Expression = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = void 0;
+exports.Var = exports.Print = exports.Expression = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = void 0;
 class AST {
 }
 class Binary extends AST {
@@ -53,6 +53,17 @@ class Unary extends AST {
     }
 }
 exports.Unary = Unary;
+class Variable extends AST {
+    name;
+    constructor(name) {
+        super();
+        this.name = name;
+    }
+    visit(visitor) {
+        return visitor.visitVariable(this);
+    }
+}
+exports.Variable = Variable;
 class Expression extends AST {
     expression;
     constructor(expression) {
@@ -75,4 +86,17 @@ class Print extends AST {
     }
 }
 exports.Print = Print;
+class Var extends AST {
+    name;
+    initializer;
+    constructor(name, initializer) {
+        super();
+        this.name = name;
+        this.initializer = initializer;
+    }
+    visit(visitor) {
+        return visitor.visitVar(this);
+    }
+}
+exports.Var = Var;
 //# sourceMappingURL=Expr.js.map

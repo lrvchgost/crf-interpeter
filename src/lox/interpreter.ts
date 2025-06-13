@@ -8,6 +8,8 @@ import {
   Print,
   Stmt,
   Unary,
+  Var,
+  Variable,
   Visitor,
 } from "./Expr";
 import { Lox } from "./Lox";
@@ -153,6 +155,14 @@ export class Interpreter implements Visitor<Value> {
     const expression = this.evaluate(stmt.expression);
 
     console.log(this.stringify(expression));
+  }
+
+  visitVariable(_expr: Variable): void {
+
+  }
+
+  visitVar(_stmt: Var): void {
+    // this.evaluate(stmt.expression);
   }
 
   evaluate(expr: Expr | Stmt): Value {

@@ -120,6 +120,10 @@ class Interpreter {
         const expression = this.evaluate(stmt.expression);
         console.log(this.stringify(expression));
     }
+    visitVariable(_expr) {
+    }
+    visitVar(_stmt) {
+    }
     evaluate(expr) {
         return expr.visit(this);
     }
