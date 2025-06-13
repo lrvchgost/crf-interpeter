@@ -59,7 +59,7 @@ export const checkNumberOperands = (
     return;
   }
 
-  throw new RuntimeError(operator, "Operands must be a numbers.");
+  throw new RuntimeError(operator, "Operands must be numbers.");
 };
 
 export class Interpreter implements Visitor<Value> {

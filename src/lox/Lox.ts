@@ -16,6 +16,7 @@ export class Lox {
   interpreter = new Interpreter();
   
   constructor(args: string[], private sourceFolder: string) {
+    // console.log(args)
     if (args.length > 1) {
       throw "Usage: jlox [script]";
     }

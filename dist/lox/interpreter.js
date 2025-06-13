@@ -39,7 +39,7 @@ const checkNumberOperands = (operator, left, right) => {
     if (typeof left === "number" && typeof right === "number") {
         return;
     }
-    throw new error_1.RuntimeError(operator, "Operands must be a numbers.");
+    throw new error_1.RuntimeError(operator, "Operands must be numbers.");
 };
 exports.checkNumberOperands = checkNumberOperands;
 class Interpreter {

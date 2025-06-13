@@ -214,13 +214,13 @@ export class Parser {
   }
 
   parse() {
-    const statemets: Stmt[] = [];
+    const statements: Stmt[] = [];
 
     while (!this.isAtEnd()) {
-      statemets.push(this.statement());
+      statements.push(this.statement());
     }
 
-    return statemets;
+    return statements;
     // try {
     //   return this.expression();
     // } catch (error) {

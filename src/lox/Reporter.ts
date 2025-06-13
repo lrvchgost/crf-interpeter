@@ -15,7 +15,7 @@ export class Reporter {
       if (arg.type === TokenType.EOF) {
         this.report(arg.line, " at end", message);
       } else {
-        this.report(arg.line, " at '" + arg.lexeme + "'", message);
+        this.report(arg.line, " at '" + arg.lexeme + "' ", message);
       }
     }
   }

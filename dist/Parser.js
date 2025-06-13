@@ -155,11 +155,11 @@ class Parser {
         }
     }
     parse() {
-        const statemets = [];
+        const statements = [];
         while (!this.isAtEnd()) {
-            statemets.push(this.statement());
+            statements.push(this.statement());
         }
-        return statemets;
+        return statements;
     }
 }
 exports.Parser = Parser;
