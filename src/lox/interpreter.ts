@@ -16,6 +16,7 @@ import {
   Var,
   Variable,
   Visitor,
+  While,
 } from "./Expr";
 import { Lox } from "./Lox";
 import { Token } from "./Token";
@@ -209,6 +210,12 @@ export class Interpreter implements Visitor<Value> {
     }
 
     return this.evaluate(expr.right);
+  }
+
+  visitWhile(stmt: While) {
+    while(Boolean(this.evaluate(stmt.condition))) {
+      this.evaluate(stmt.body);
+    }
   }
 
   evaluate(expr: Expr | Stmt): Value {

@@ -14,6 +14,7 @@ export type Visitor<T> = {
 	visitPrint: (printNode: Print) => T;
 	visitVar: (varNode: Var) => T;
 	visitIf: (ifNode: If) => T;
+	visitWhile: (whileNode: While) => T;
 
 }
 
@@ -23,7 +24,7 @@ abstract class AST {
 
 export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical;
 
-export type Stmt = Block | Expression | Print | Var | If;
+export type Stmt = Block | Expression | Print | Var | If | While;
 
 
 export class Assign extends AST {
@@ -210,6 +211,22 @@ export class If extends AST {
 
     visit<T>(visitor: Visitor<T>) {
         return visitor.visitIf(this);
+    }
+}
+
+export class While extends AST {
+	condition: Expr;
+	body: Stmt;
+
+	constructor(condition: Expr, body: Stmt) {
+		super();
+
+		this.condition = condition;
+		this.body = body;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitWhile(this);
     }
 }
 

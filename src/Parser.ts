@@ -13,6 +13,7 @@ import {
   Block,
   If,
   Logical,
+  While,
 } from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
@@ -229,8 +230,16 @@ export class Parser {
       return this.ifStatement();
     }
 
+    if (this.match(TokenType.FOR)) {
+      return this.forStatement();
+    }
+
     if (this.match(TokenType.PRINT)) {
       return this.printStatement();
+    }
+
+    if (this.match(TokenType.WHILE)) {
+      return this.whileStatement();
     }
 
     if (this.match(TokenType.LEFT_BRACE)) {
@@ -238,6 +247,66 @@ export class Parser {
     }
 
     return this.expressionStatement();
+  }
+
+  forStatement() {
+    this.consume(TokenType.LEFT_PAREN, "Expect, '(' after 'for'.");
+
+    let initializer: Stmt | undefined;
+
+    if (this.match(TokenType.SEMICOLON)) {
+      initializer = undefined;
+    } else if (this.match(TokenType.VAR)) {
+      initializer = this.varDeclaration();
+    } else {
+      initializer = this.expressionStatement();
+    }
+
+    let condition: Expr | undefined;
+
+    if (!this.check(TokenType.SEMICOLON)) {
+      condition = this.expression();
+    }
+
+    this.consume(TokenType.SEMICOLON, "Expect ';' after loop condition.");
+
+    let increment: Expr | undefined;
+
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      increment = this.expression();
+    }
+
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.");
+
+    let body = this.statement();
+
+    if (increment !== undefined) {
+      body = new Block([body, new Expression(increment)]);
+    }
+
+    if (condition  === undefined) {
+      condition = new Literal(true);
+    }
+
+    body = new While(condition, body);
+
+    if (initializer !== undefined) {
+      body = new Block([initializer, body]);
+    }
+
+    return body;
+  }
+
+  whileStatement() {
+    this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+
+    const condition = this.expression();
+
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+
+    const body = this.statement();
+
+    return new While(condition, body);
   }
 
   ifStatement() {

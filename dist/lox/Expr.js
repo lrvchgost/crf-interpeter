@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.If = exports.Var = exports.Print = exports.Expression = exports.Block = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = void 0;
+exports.While = exports.If = exports.Var = exports.Print = exports.Expression = exports.Block = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = void 0;
 class AST {
 }
 class Assign extends AST {
@@ -153,4 +153,17 @@ class If extends AST {
     }
 }
 exports.If = If;
+class While extends AST {
+    condition;
+    body;
+    constructor(condition, body) {
+        super();
+        this.condition = condition;
+        this.body = body;
+    }
+    visit(visitor) {
+        return visitor.visitWhile(this);
+    }
+}
+exports.While = While;
 //# sourceMappingURL=Expr.js.map

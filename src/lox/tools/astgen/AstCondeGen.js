@@ -102,18 +102,19 @@ const exprConfig = {
     `Literal  = value: ${literal}`,
     "Unary    = operator: Token, right: Expr",
     "Variable = name: Token",
-    "Logical = left: Expr, operator: Token, right: Expr"
+    "Logical  = left: Expr, operator: Token, right: Expr"
   ],
 };
 
 const stmtConfig = {
   output: "Stmt",
   classes: [
-    "Block = statements: Stmt[]",
+    "Block      = statements: Stmt[]",
     "Expression = expression: Expr",
-    "Print = expression: Expr",
-    "Var = name: Token, initializer?: Expr",
-    "If = condition: Expr, thenBranch: Stmt, elseBranch?: Stmt",
+    "Print      = expression: Expr",
+    "Var        = name: Token, initializer?: Expr",
+    "If         = condition: Expr, thenBranch: Stmt, elseBranch?: Stmt",
+    "While      = condition: Expr, body: Stmt",
   ],
 };
 

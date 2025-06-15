@@ -157,13 +157,61 @@ class Parser {
         if (this.match(TokenType_1.TokenType.IF)) {
             return this.ifStatement();
         }
+        if (this.match(TokenType_1.TokenType.FOR)) {
+            return this.forStatement();
+        }
         if (this.match(TokenType_1.TokenType.PRINT)) {
             return this.printStatement();
+        }
+        if (this.match(TokenType_1.TokenType.WHILE)) {
+            return this.whileStatement();
         }
         if (this.match(TokenType_1.TokenType.LEFT_BRACE)) {
             return new Expr_1.Block(this.block());
         }
         return this.expressionStatement();
+    }
+    forStatement() {
+        this.consume(TokenType_1.TokenType.LEFT_PAREN, "Expect, '(' after 'for'.");
+        let initializer;
+        if (this.match(TokenType_1.TokenType.SEMICOLON)) {
+            initializer = undefined;
+        }
+        else if (this.match(TokenType_1.TokenType.VAR)) {
+            initializer = this.varDeclaration();
+        }
+        else {
+            initializer = this.expressionStatement();
+        }
+        let condition;
+        if (!this.check(TokenType_1.TokenType.SEMICOLON)) {
+            condition = this.expression();
+        }
+        this.consume(TokenType_1.TokenType.SEMICOLON, "Expect ';' after loop condition.");
+        let increment;
+        if (!this.check(TokenType_1.TokenType.RIGHT_PAREN)) {
+            increment = this.expression();
+        }
+        this.consume(TokenType_1.TokenType.RIGHT_PAREN, "Expect ')' after for clauses.");
+        let body = this.statement();
+        if (increment !== undefined) {
+            body = new Expr_1.Block([body, new Expr_1.Expression(increment)]);
+        }
+        if (condition === undefined) {
+            condition = new Expr_1.Literal(true);
+        }
+        body = new Expr_1.While(condition, body);
+        if (initializer !== undefined) {
+            body = new Expr_1.Block([initializer, body]);
+        }
+        return body;
+    }
+    whileStatement() {
+        this.consume(TokenType_1.TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+        const condition = this.expression();
+        this.consume(TokenType_1.TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+        const body = this.statement();
+        return new Expr_1.While(condition, body);
     }
     ifStatement() {
         this.consume(TokenType_1.TokenType.LEFT_PAREN, "Expect '(' after 'if'.");

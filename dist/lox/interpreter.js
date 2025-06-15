@@ -161,6 +161,11 @@ class Interpreter {
         }
         return this.evaluate(expr.right);
     }
+    visitWhile(stmt) {
+        while (Boolean(this.evaluate(stmt.condition))) {
+            this.evaluate(stmt.body);
+        }
+    }
     evaluate(expr) {
         return expr.visit(this);
     }
