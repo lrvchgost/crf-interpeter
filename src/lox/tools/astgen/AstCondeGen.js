@@ -96,6 +96,7 @@ ${astConfig.map((config) => defineClasses(config)).join('\n')}`;
 const exprConfig = {
   output: "Expr",
   classes: [
+    "Assign   = name: Token, value: Expr",
     "Binary   = left: Expr, operator: Token, right: Expr",
     "Grouping = expression: Expr",
     `Literal  = value: ${literal}`,
@@ -107,6 +108,7 @@ const exprConfig = {
 const stmtConfig = {
   output: "Stmt",
   classes: [
+    "Block = statements: Stmt[]",
     "Expression = expression: Expr",
     "Print = expression: Expr",
     "Var = name: Token, initializer?: Expr",

@@ -2,11 +2,13 @@ import { Token } from './Token';
 
 
 export type Visitor<T> = {
+	visitAssign: (assignNode: Assign) => T;
 	visitBinary: (binaryNode: Binary) => T;
 	visitGrouping: (groupingNode: Grouping) => T;
 	visitLiteral: (literalNode: Literal) => T;
 	visitUnary: (unaryNode: Unary) => T;
 	visitVariable: (variableNode: Variable) => T;
+	visitBlock: (blockNode: Block) => T;
 	visitExpression: (expressionNode: Expression) => T;
 	visitPrint: (printNode: Print) => T;
 	visitVar: (varNode: Var) => T;
@@ -17,10 +19,26 @@ abstract class AST {
     abstract visit<T>(visitor: Visitor<T>): T
 }
 
-export type Expr = Binary | Grouping | Literal | Unary | Variable;
+export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable;
 
-export type Stmt = Expression | Print | Var;
+export type Stmt = Block | Expression | Print | Var;
 
+
+export class Assign extends AST {
+	name: Token;
+	value: Expr;
+
+	constructor(name: Token, value: Expr) {
+		super();
+
+		this.name = name;
+		this.value = value;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitAssign(this);
+    }
+}
 
 export class Binary extends AST {
 	left: Expr;
@@ -98,6 +116,20 @@ export class Variable extends AST {
     }
 }
 
+
+export class Block extends AST {
+	statements: Stmt[];
+
+	constructor(statements: Stmt[]) {
+		super();
+
+		this.statements = statements;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitBlock(this);
+    }
+}
 
 export class Expression extends AST {
 	expression: Expr;

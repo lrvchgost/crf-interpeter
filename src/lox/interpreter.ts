@@ -1,7 +1,9 @@
 import {Envirnonment} from "./Environment";
 import { RuntimeError } from "./error";
 import {
+  Assign,
   Binary,
+  Block,
   Expr,
   Expression,
   Grouping,
@@ -66,7 +68,7 @@ export const checkNumberOperands = (
 };
 
 export class Interpreter implements Visitor<Value> {
-  envirnomnent = new Envirnonment();
+  environment = new Envirnonment();
 
   visitLiteral(expr: Literal): Value {
     return expr.value;
@@ -161,7 +163,7 @@ export class Interpreter implements Visitor<Value> {
   }
 
   visitVariable(expr: Variable): Value {
-    return this.envirnomnent.get(expr.name);
+    return this.environment.get(expr.name);
   }
 
   visitVar(stmt: Var): void {
@@ -171,11 +173,37 @@ export class Interpreter implements Visitor<Value> {
       value =  this.evaluate(stmt.initializer);
     }
 
-    this.envirnomnent.define(stmt.name.lexeme, value);
+    this.environment.define(stmt.name.lexeme, value);
+  }
+
+  visitAssign(expr: Assign): Value {
+    const value = this.evaluate(expr.value);
+
+    this.environment.assign(expr.name, value);
+
+    return value;
+  }
+
+  visitBlock(stmt: Block) {
+    this.executeBlock(stmt.statements, new Envirnonment(this.environment));
   }
 
   evaluate(expr: Expr | Stmt): Value {
     return expr.visit(this);
+  }
+
+  executeBlock(statements: Stmt[], environment: Envirnonment) {
+    const previous = this.environment;
+
+    try {
+      this.environment = environment;
+
+      for(const statement of statements) {
+        this.evaluate(statement);
+      }
+    } finally {
+      this.environment = previous;
+    }
   }
 
   interpret(statemets: Stmt[]) {

@@ -44,7 +44,7 @@ const checkNumberOperands = (operator, left, right) => {
 };
 exports.checkNumberOperands = checkNumberOperands;
 class Interpreter {
-    envirnomnent = new Environment_1.Envirnonment();
+    environment = new Environment_1.Envirnonment();
     visitLiteral(expr) {
         return expr.value;
     }
@@ -123,17 +123,37 @@ class Interpreter {
         console.log(this.stringify(expression));
     }
     visitVariable(expr) {
-        return this.envirnomnent.get(expr.name);
+        return this.environment.get(expr.name);
     }
     visitVar(stmt) {
         let value = null;
         if (stmt.initializer) {
             value = this.evaluate(stmt.initializer);
         }
-        this.envirnomnent.define(stmt.name.lexeme, value);
+        this.environment.define(stmt.name.lexeme, value);
+    }
+    visitAssign(expr) {
+        const value = this.evaluate(expr.value);
+        this.environment.assign(expr.name, value);
+        return value;
+    }
+    visitBlock(stmt) {
+        this.executeBlock(stmt.statements, new Environment_1.Envirnonment(this.environment));
     }
     evaluate(expr) {
         return expr.visit(this);
+    }
+    executeBlock(statements, environment) {
+        const previous = this.environment;
+        try {
+            this.environment = environment;
+            for (const statement of statements) {
+                this.evaluate(statement);
+            }
+        }
+        finally {
+            this.environment = previous;
+        }
     }
     interpret(statemets) {
         try {

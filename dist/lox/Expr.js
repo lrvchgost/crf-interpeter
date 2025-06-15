@@ -1,8 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Var = exports.Print = exports.Expression = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = void 0;
+exports.Var = exports.Print = exports.Expression = exports.Block = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = void 0;
 class AST {
 }
+class Assign extends AST {
+    name;
+    value;
+    constructor(name, value) {
+        super();
+        this.name = name;
+        this.value = value;
+    }
+    visit(visitor) {
+        return visitor.visitAssign(this);
+    }
+}
+exports.Assign = Assign;
 class Binary extends AST {
     left;
     operator;
@@ -64,6 +77,17 @@ class Variable extends AST {
     }
 }
 exports.Variable = Variable;
+class Block extends AST {
+    statements;
+    constructor(statements) {
+        super();
+        this.statements = statements;
+    }
+    visit(visitor) {
+        return visitor.visitBlock(this);
+    }
+}
+exports.Block = Block;
 class Expression extends AST {
     expression;
     constructor(expression) {

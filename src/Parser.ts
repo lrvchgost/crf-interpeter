@@ -9,6 +9,8 @@ import {
   Expression,
   Var,
   Variable,
+  Assign,
+  Block,
 } from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
@@ -26,7 +28,25 @@ export class Parser {
   }
 
   expression(): Expr {
-    return this.equality();
+    return this.assignment();
+  }
+
+  assignment(): Expr {
+    const expr = this.equality();
+
+    if (this.match(TokenType.EQUAL)) {
+      const equals = this.previous();
+      const value = this.assignment();
+
+      if (expr instanceof Variable) {
+        const name = expr.name;
+        return new Assign(name, value);
+      }
+
+      this._error(equals, "Invalid assignment target")
+    }
+
+    return expr;
   }
 
   declaration() {
@@ -182,7 +202,24 @@ export class Parser {
       return this.printStatement();
     }
 
+    if (this.match(TokenType.LEFT_BRACE)) {
+      return new Block(this.block());
+    }
+
     return this.expressionStatement();
+  }
+
+  block(): Stmt[] {
+    const statements: Stmt[] = [];
+
+    while(!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      const declaration = this.declaration();
+      declaration && statements.push(declaration);
+    }
+
+    this.consume(TokenType.RIGHT_BRACE, "Expect '}' after block");
+
+    return statements;
   }
 
   printStatement() {

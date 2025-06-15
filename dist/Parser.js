@@ -13,7 +13,20 @@ class Parser {
         this.tokens = tokens;
     }
     expression() {
-        return this.equality();
+        return this.assignment();
+    }
+    assignment() {
+        const expr = this.equality();
+        if (this.match(TokenType_1.TokenType.EQUAL)) {
+            const equals = this.previous();
+            const value = this.assignment();
+            if (expr instanceof Expr_1.Variable) {
+                const name = expr.name;
+                return new Expr_1.Assign(name, value);
+            }
+            this._error(equals, "Invalid assignment target");
+        }
+        return expr;
     }
     declaration() {
         try {
@@ -126,7 +139,19 @@ class Parser {
         if (this.match(TokenType_1.TokenType.PRINT)) {
             return this.printStatement();
         }
+        if (this.match(TokenType_1.TokenType.LEFT_BRACE)) {
+            return new Expr_1.Block(this.block());
+        }
         return this.expressionStatement();
+    }
+    block() {
+        const statements = [];
+        while (!this.check(TokenType_1.TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+            const declaration = this.declaration();
+            declaration && statements.push(declaration);
+        }
+        this.consume(TokenType_1.TokenType.RIGHT_BRACE, "Expect '}' after block");
+        return statements;
     }
     printStatement() {
         const expr = this.expression();
