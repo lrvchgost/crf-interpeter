@@ -1,4 +1,4 @@
-import {Lox} from "./lox/Lox";
+import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
 import { Literal, Token } from "./lox/Token";
 import { TokenType } from "./lox/TokenType";
@@ -250,7 +250,6 @@ export class Scanner {
 
     if (type === undefined) {
       type = TokenType.IDENTIFIER;
-
     }
 
     this.addToken(type);

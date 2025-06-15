@@ -113,7 +113,7 @@ class Parser {
             return new Expr_1.Literal(this.previous().literal);
         }
         if (this.match(TokenType_1.TokenType.IDENTIFIER)) {
-            return new Expr_1.Var(this.previous());
+            return new Expr_1.Variable(this.previous());
         }
         if (this.match(TokenType_1.TokenType.LEFT_PAREN)) {
             const expr = this.expression();
@@ -180,6 +180,7 @@ class Parser {
     }
     parse() {
         const statements = [];
+        debugger;
         while (!this.isAtEnd()) {
             const declaration = this.declaration();
             declaration && statements.push(declaration);

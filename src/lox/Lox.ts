@@ -3,18 +3,18 @@ import fs from "node:fs";
 import readline from "readline";
 import { Scanner } from "../Scanner";
 // import {Reporter} from "./Reporter";
-import {Parser} from "../Parser";
+import { Parser } from "../Parser";
 // import {AstPrinter} from "./astPrinter";
-import {Token} from "./Token";
-import {TokenType} from "./TokenType";
-import {RuntimeError} from "./error";
-import {Interpreter} from "./interpreter";
+import { Token } from "./Token";
+import { TokenType } from "./TokenType";
+import { RuntimeError } from "./error";
+import { Interpreter } from "./interpreter";
 
 export class Lox {
   static hadError = false;
   static hadRuntimeError = false;
   interpreter = new Interpreter();
-  
+
   constructor(args: string[], private sourceFolder: string) {
     // console.log(args)
     if (args.length > 1) {
@@ -29,7 +29,12 @@ export class Lox {
   }
 
   runFile(sourcePath: string) {
-    const filePath = path.join(__dirname, "../../", this.sourceFolder, sourcePath);
+    const filePath = path.join(
+      __dirname,
+      "../../",
+      this.sourceFolder,
+      sourcePath
+    );
 
     if (!fs.existsSync(filePath)) {
       throw `File not found ${filePath}`;
@@ -109,10 +114,11 @@ export class Lox {
     const tokens = scanner.scanTokens();
     const parser = new Parser(tokens);
 
+  debugger;
     const expr = parser.parse();
 
     // console.log(Lox.hadError);
-    console.log(expr);
+    console.log('expr', expr);
 
     if (Lox.hadError) {
       return;

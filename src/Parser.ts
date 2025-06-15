@@ -8,6 +8,7 @@ import {
   Print,
   Expression,
   Var,
+  Variable,
 } from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
@@ -164,7 +165,7 @@ export class Parser {
     }
 
     if (this.match(TokenType.IDENTIFIER)) {
-      return new Var(this.previous());
+      return new Variable(this.previous());
     }
 
     if (this.match(TokenType.LEFT_PAREN)) {
@@ -202,6 +203,7 @@ export class Parser {
     }
 
     this.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration");
+
     return new Var(name, initializer);
   }
 
@@ -254,6 +256,8 @@ export class Parser {
 
   parse() {
     const statements: Stmt[] = [];
+
+    debugger;
 
     while (!this.isAtEnd()) {
       const declaration = this.declaration();

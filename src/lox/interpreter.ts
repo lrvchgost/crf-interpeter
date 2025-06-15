@@ -1,3 +1,4 @@
+import {Envirnonment} from "./Environment";
 import { RuntimeError } from "./error";
 import {
   Binary,
@@ -65,6 +66,8 @@ export const checkNumberOperands = (
 };
 
 export class Interpreter implements Visitor<Value> {
+  envirnomnent = new Envirnonment();
+
   visitLiteral(expr: Literal): Value {
     return expr.value;
   }
@@ -157,12 +160,18 @@ export class Interpreter implements Visitor<Value> {
     console.log(this.stringify(expression));
   }
 
-  visitVariable(_expr: Variable): void {
-
+  visitVariable(expr: Variable): Value {
+    return this.envirnomnent.get(expr.name);
   }
 
-  visitVar(_stmt: Var): void {
-    // this.evaluate(stmt.expression);
+  visitVar(stmt: Var): void {
+    let value: Value = null;
+
+    if (stmt.initializer) {
+      value =  this.evaluate(stmt.initializer);
+    }
+
+    this.envirnomnent.define(stmt.name.lexeme, value);
   }
 
   evaluate(expr: Expr | Stmt): Value {

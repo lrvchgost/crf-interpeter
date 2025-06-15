@@ -91,8 +91,9 @@ class Lox {
         const scanner = new Scanner_1.Scanner(source);
         const tokens = scanner.scanTokens();
         const parser = new Parser_1.Parser(tokens);
+        debugger;
         const expr = parser.parse();
-        console.log(expr);
+        console.log('expr', expr);
         if (Lox.hadError) {
             return;
         }

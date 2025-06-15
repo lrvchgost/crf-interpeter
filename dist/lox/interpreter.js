@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Interpreter = exports.checkNumberOperands = exports.checkNumberOperand = exports.isEqual = exports.isTruthy = exports.double = void 0;
+const Environment_1 = require("./Environment");
 const error_1 = require("./error");
 const Lox_1 = require("./Lox");
 const TokenType_1 = require("./TokenType");
@@ -43,6 +44,7 @@ const checkNumberOperands = (operator, left, right) => {
 };
 exports.checkNumberOperands = checkNumberOperands;
 class Interpreter {
+    envirnomnent = new Environment_1.Envirnonment();
     visitLiteral(expr) {
         return expr.value;
     }
@@ -120,9 +122,15 @@ class Interpreter {
         const expression = this.evaluate(stmt.expression);
         console.log(this.stringify(expression));
     }
-    visitVariable(_expr) {
+    visitVariable(expr) {
+        return this.envirnomnent.get(expr.name);
     }
-    visitVar(_stmt) {
+    visitVar(stmt) {
+        let value = null;
+        if (stmt.initializer) {
+            value = this.evaluate(stmt.initializer);
+        }
+        this.envirnomnent.define(stmt.name.lexeme, value);
     }
     evaluate(expr) {
         return expr.visit(this);
