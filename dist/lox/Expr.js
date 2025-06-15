@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Var = exports.Print = exports.Expression = exports.Block = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = void 0;
+exports.If = exports.Var = exports.Print = exports.Expression = exports.Block = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = void 0;
 class AST {
 }
 class Assign extends AST {
@@ -77,6 +77,21 @@ class Variable extends AST {
     }
 }
 exports.Variable = Variable;
+class Logical extends AST {
+    left;
+    operator;
+    right;
+    constructor(left, operator, right) {
+        super();
+        this.left = left;
+        this.operator = operator;
+        this.right = right;
+    }
+    visit(visitor) {
+        return visitor.visitLogical(this);
+    }
+}
+exports.Logical = Logical;
 class Block extends AST {
     statements;
     constructor(statements) {
@@ -123,4 +138,19 @@ class Var extends AST {
     }
 }
 exports.Var = Var;
+class If extends AST {
+    condition;
+    thenBranch;
+    elseBranch;
+    constructor(condition, thenBranch, elseBranch) {
+        super();
+        this.condition = condition;
+        this.thenBranch = thenBranch;
+        this.elseBranch = elseBranch;
+    }
+    visit(visitor) {
+        return visitor.visitIf(this);
+    }
+}
+exports.If = If;
 //# sourceMappingURL=Expr.js.map

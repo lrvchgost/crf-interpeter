@@ -102,6 +102,7 @@ const exprConfig = {
     `Literal  = value: ${literal}`,
     "Unary    = operator: Token, right: Expr",
     "Variable = name: Token",
+    "Logical = left: Expr, operator: Token, right: Expr"
   ],
 };
 
@@ -112,6 +113,7 @@ const stmtConfig = {
     "Expression = expression: Expr",
     "Print = expression: Expr",
     "Var = name: Token, initializer?: Expr",
+    "If = condition: Expr, thenBranch: Stmt, elseBranch?: Stmt",
   ],
 };
 

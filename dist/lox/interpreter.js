@@ -138,17 +138,41 @@ class Interpreter {
         return value;
     }
     visitBlock(stmt) {
+        debugger;
         this.executeBlock(stmt.statements, new Environment_1.Envirnonment(this.environment));
+    }
+    visitIf(stmt) {
+        if (Boolean(this.evaluate(stmt.condition)) === true) {
+            this.execute(stmt.thenBranch);
+        }
+        else if (stmt.elseBranch !== undefined) {
+            this.execute(stmt.elseBranch);
+        }
+    }
+    visitLogical(expr) {
+        const left = this.evaluate(expr.left);
+        if (expr.operator.type === TokenType_1.TokenType.OR) {
+            if (Boolean(left) === true)
+                return left;
+        }
+        else {
+            if (Boolean(left) !== true)
+                return left;
+        }
+        return this.evaluate(expr.right);
     }
     evaluate(expr) {
         return expr.visit(this);
+    }
+    execute(stmt) {
+        stmt.visit(this);
     }
     executeBlock(statements, environment) {
         const previous = this.environment;
         try {
             this.environment = environment;
             for (const statement of statements) {
-                this.evaluate(statement);
+                this.execute(statement);
             }
         }
         finally {

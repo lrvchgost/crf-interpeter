@@ -17,7 +17,7 @@ class Envirnonment {
             return;
         }
         if (this.enclosing !== null) {
-            return this.enclosing.assign(name);
+            return this.enclosing.assign(name, value);
         }
         throw new error_1.RuntimeError(name, "Undefined vairable '" + name.lexeme + "'.");
     }

@@ -16,7 +16,7 @@ class Parser {
         return this.assignment();
     }
     assignment() {
-        const expr = this.equality();
+        const expr = this.or();
         if (this.match(TokenType_1.TokenType.EQUAL)) {
             const equals = this.previous();
             const value = this.assignment();
@@ -25,6 +25,24 @@ class Parser {
                 return new Expr_1.Assign(name, value);
             }
             this._error(equals, "Invalid assignment target");
+        }
+        return expr;
+    }
+    or() {
+        let expr = this.and();
+        while (this.match(TokenType_1.TokenType.OR)) {
+            const operator = this.previous();
+            const right = this.and();
+            expr = new Expr_1.Logical(expr, operator, right);
+        }
+        return expr;
+    }
+    and() {
+        let expr = this.equality();
+        while (this.match(TokenType_1.TokenType.AND)) {
+            const operator = this.previous();
+            const right = this.equality();
+            expr = new Expr_1.Logical(expr, operator, right);
         }
         return expr;
     }
@@ -136,6 +154,9 @@ class Parser {
         throw new ParseError("Unrecognized TokenType " + this.peek());
     }
     statement() {
+        if (this.match(TokenType_1.TokenType.IF)) {
+            return this.ifStatement();
+        }
         if (this.match(TokenType_1.TokenType.PRINT)) {
             return this.printStatement();
         }
@@ -143,6 +164,17 @@ class Parser {
             return new Expr_1.Block(this.block());
         }
         return this.expressionStatement();
+    }
+    ifStatement() {
+        this.consume(TokenType_1.TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+        const condition = this.expression();
+        this.consume(TokenType_1.TokenType.RIGHT_PAREN, "Expect ')' after 'if'.");
+        const thenBranch = this.statement();
+        let elseBranch = undefined;
+        if (this.match(TokenType_1.TokenType.ELSE)) {
+            elseBranch = this.statement();
+        }
+        return new Expr_1.If(condition, thenBranch, elseBranch);
     }
     block() {
         const statements = [];

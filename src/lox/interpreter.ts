@@ -1,4 +1,4 @@
-import {Envirnonment} from "./Environment";
+import { Envirnonment } from "./Environment";
 import { RuntimeError } from "./error";
 import {
   Assign,
@@ -7,7 +7,9 @@ import {
   Expr,
   Expression,
   Grouping,
+  If,
   Literal,
+  Logical,
   Print,
   Stmt,
   Unary,
@@ -170,7 +172,7 @@ export class Interpreter implements Visitor<Value> {
     let value: Value = null;
 
     if (stmt.initializer) {
-      value =  this.evaluate(stmt.initializer);
+      value = this.evaluate(stmt.initializer);
     }
 
     this.environment.define(stmt.name.lexeme, value);
@@ -185,11 +187,36 @@ export class Interpreter implements Visitor<Value> {
   }
 
   visitBlock(stmt: Block) {
+    debugger;
     this.executeBlock(stmt.statements, new Envirnonment(this.environment));
+  }
+
+  visitIf(stmt: If) {
+    if (Boolean(this.evaluate(stmt.condition)) === true) {
+      this.execute(stmt.thenBranch);
+    } else if (stmt.elseBranch !== undefined) {
+      this.execute(stmt.elseBranch);
+    }
+  }
+
+  visitLogical(expr: Logical) {
+    const left = this.evaluate(expr.left);
+
+    if (expr.operator.type === TokenType.OR) {
+      if (Boolean(left) === true) return left;
+    } else {
+      if (Boolean(left) !== true) return left;
+    }
+
+    return this.evaluate(expr.right);
   }
 
   evaluate(expr: Expr | Stmt): Value {
     return expr.visit(this);
+  }
+
+  execute(stmt: Stmt) {
+    stmt.visit(this);
   }
 
   executeBlock(statements: Stmt[], environment: Envirnonment) {
@@ -198,8 +225,8 @@ export class Interpreter implements Visitor<Value> {
     try {
       this.environment = environment;
 
-      for(const statement of statements) {
-        this.evaluate(statement);
+      for (const statement of statements) {
+        this.execute(statement);
       }
     } finally {
       this.environment = previous;

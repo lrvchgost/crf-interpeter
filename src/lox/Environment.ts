@@ -21,7 +21,7 @@ export class Envirnonment {
     }
 
     if (this.enclosing !== null) {
-      return this.enclosing.assign(name);
+      return this.enclosing.assign(name, value);
     }
 
     throw new RuntimeError(name, "Undefined vairable '" + name.lexeme + "'.");

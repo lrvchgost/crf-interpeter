@@ -8,10 +8,12 @@ export type Visitor<T> = {
 	visitLiteral: (literalNode: Literal) => T;
 	visitUnary: (unaryNode: Unary) => T;
 	visitVariable: (variableNode: Variable) => T;
+	visitLogical: (logicalNode: Logical) => T;
 	visitBlock: (blockNode: Block) => T;
 	visitExpression: (expressionNode: Expression) => T;
 	visitPrint: (printNode: Print) => T;
 	visitVar: (varNode: Var) => T;
+	visitIf: (ifNode: If) => T;
 
 }
 
@@ -19,9 +21,9 @@ abstract class AST {
     abstract visit<T>(visitor: Visitor<T>): T
 }
 
-export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable;
+export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical;
 
-export type Stmt = Block | Expression | Print | Var;
+export type Stmt = Block | Expression | Print | Var | If;
 
 
 export class Assign extends AST {
@@ -116,6 +118,24 @@ export class Variable extends AST {
     }
 }
 
+export class Logical extends AST {
+	left: Expr;
+	operator: Token;
+	right: Expr;
+
+	constructor(left: Expr, operator: Token, right: Expr) {
+		super();
+
+		this.left = left;
+		this.operator = operator;
+		this.right = right;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitLogical(this);
+    }
+}
+
 
 export class Block extends AST {
 	statements: Stmt[];
@@ -172,6 +192,24 @@ export class Var extends AST {
 
     visit<T>(visitor: Visitor<T>) {
         return visitor.visitVar(this);
+    }
+}
+
+export class If extends AST {
+	condition: Expr;
+	thenBranch: Stmt;
+	elseBranch?: Stmt;
+
+	constructor(condition: Expr, thenBranch: Stmt, elseBranch?: Stmt) {
+		super();
+
+		this.condition = condition;
+		this.thenBranch = thenBranch;
+		this.elseBranch = elseBranch;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitIf(this);
     }
 }
 

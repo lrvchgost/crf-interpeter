@@ -11,6 +11,8 @@ import {
   Variable,
   Assign,
   Block,
+  If,
+  Logical,
 } from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
@@ -32,7 +34,7 @@ export class Parser {
   }
 
   assignment(): Expr {
-    const expr = this.equality();
+    const expr = this.or();
 
     if (this.match(TokenType.EQUAL)) {
       const equals = this.previous();
@@ -44,6 +46,31 @@ export class Parser {
       }
 
       this._error(equals, "Invalid assignment target")
+    }
+
+    return expr;
+  }
+
+  or(): Expr {
+    let expr = this.and();
+
+    while(this.match(TokenType.OR)) {
+      const operator  = this.previous();
+      const right = this.and();
+      expr =  new Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  and(): Expr {
+    let expr = this.equality();
+
+    while(this.match(TokenType.AND)) {
+      const operator  = this.previous();
+      const right = this.equality();
+
+      expr =  new Logical(expr, operator, right);
     }
 
     return expr;
@@ -197,7 +224,11 @@ export class Parser {
     throw new ParseError("Unrecognized TokenType " + this.peek());
   }
 
-  statement() {
+  statement(): Stmt {
+    if (this.match(TokenType.IF)) {
+      return this.ifStatement();
+    }
+
     if (this.match(TokenType.PRINT)) {
       return this.printStatement();
     }
@@ -207,6 +238,23 @@ export class Parser {
     }
 
     return this.expressionStatement();
+  }
+
+  ifStatement() {
+    this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+
+    const condition: Expr = this.expression();
+
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after 'if'.");
+
+    const thenBranch = this.statement();
+    let elseBranch: Stmt | undefined = undefined;
+
+    if (this.match(TokenType.ELSE)) {
+      elseBranch = this.statement();
+    }
+
+    return new If(condition, thenBranch, elseBranch);
   }
 
   block(): Stmt[] {
@@ -303,11 +351,5 @@ export class Parser {
     }
 
     return statements;
-    // try {
-    //   return this.expression();
-    // } catch (error) {
-    //   console.error(error);
-    //   return null;
-    // }
   }
 }
