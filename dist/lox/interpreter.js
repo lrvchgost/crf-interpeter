@@ -4,7 +4,11 @@ exports.Interpreter = exports.checkNumberOperands = exports.checkNumberOperand =
 const Environment_1 = require("./Environment");
 const error_1 = require("./error");
 const Lox_1 = require("./Lox");
+const LoxClock_1 = require("./LoxClock");
+const LoxFunction_1 = require("./LoxFunction");
+const ReturnTrhow_1 = require("./ReturnTrhow");
 const TokenType_1 = require("./TokenType");
+const types_1 = require("./types");
 const double = (value) => {
     return Number(value);
 };
@@ -44,7 +48,11 @@ const checkNumberOperands = (operator, left, right) => {
 };
 exports.checkNumberOperands = checkNumberOperands;
 class Interpreter {
-    environment = new Environment_1.Envirnonment();
+    globals = new Environment_1.Envirnonment();
+    environment = this.globals;
+    constructor() {
+        this.globals.define("clock", new LoxClock_1.LoxClock());
+    }
     visitLiteral(expr) {
         return expr.value;
     }
@@ -138,7 +146,6 @@ class Interpreter {
         return value;
     }
     visitBlock(stmt) {
-        debugger;
         this.executeBlock(stmt.statements, new Environment_1.Envirnonment(this.environment));
     }
     visitIf(stmt) {
@@ -165,6 +172,33 @@ class Interpreter {
         while (Boolean(this.evaluate(stmt.condition))) {
             this.evaluate(stmt.body);
         }
+    }
+    visitCall(expr) {
+        const callee = this.evaluate(expr.calle);
+        const args = [];
+        for (const arg of expr.args) {
+            args.push(this.evaluate(arg));
+        }
+        if (!(callee instanceof types_1.LoxCallable)) {
+            throw new error_1.RuntimeError(expr.paren, "Can only call functions and classes");
+        }
+        const fn = callee;
+        if (args.length !== fn.arity()) {
+            throw new error_1.RuntimeError(expr.paren, "Expected " + fn.arity() + " arguments, but got " + args.length + ".");
+        }
+        return fn.call(this, ...args);
+    }
+    visitFunction(stmt) {
+        const fn = new LoxFunction_1.LoxFunction(stmt);
+        this.environment.define(stmt.name.lexeme, fn);
+        return null;
+    }
+    visitReturn(stmt) {
+        let value = null;
+        if (stmt.value !== undefined) {
+            value = this.evaluate(stmt.value);
+        }
+        throw new ReturnTrhow_1.ReturnTrhow(value);
     }
     evaluate(expr) {
         return expr.visit(this);

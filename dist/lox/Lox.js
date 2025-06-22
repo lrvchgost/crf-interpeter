@@ -84,16 +84,14 @@ class Lox {
         }
     }
     static report(line, where, message) {
-        console.log(`[line ${line}] Error ${where}: ${message}`);
+        console.log(`[Lox] [line ${line}] Error ${where}: ${message}`);
         Lox.hadError = true;
     }
     run(source) {
         const scanner = new Scanner_1.Scanner(source);
         const tokens = scanner.scanTokens();
         const parser = new Parser_1.Parser(tokens);
-        debugger;
         const expr = parser.parse();
-        console.log('expr', expr);
         if (Lox.hadError) {
             return;
         }

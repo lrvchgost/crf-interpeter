@@ -104,7 +104,7 @@ export class Lox {
   }
 
   static report(line: number, where: string, message: string) {
-    console.log(`[line ${line}] Error ${where}: ${message}`);
+    console.log(`[Lox] [line ${line}] Error ${where}: ${message}`);
 
     Lox.hadError = true;
   }
@@ -112,13 +112,13 @@ export class Lox {
   run(source: string) {
     const scanner = new Scanner(source);
     const tokens = scanner.scanTokens();
+    // console.log(tokens)
     const parser = new Parser(tokens);
 
-  debugger;
     const expr = parser.parse();
 
     // console.log(Lox.hadError);
-    console.log('expr', expr);
+    // console.log('expr', expr);
 
     if (Lox.hadError) {
       return;

@@ -2,8 +2,8 @@ import { Lox } from "./lox/Lox";
 
 // console.log(process.argv)
 
-// const args = process.argv.slice(2);
-const args = process.argv.slice(2, -1);
+const args = process.argv.slice(2);
+// const args = process.argv.slice(2, -1);
 
 const sourceFolder = "source";
 

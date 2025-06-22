@@ -4,6 +4,7 @@ import {
   Assign,
   Binary,
   Block,
+  Call,
   Expr,
   Expression,
   Grouping,
@@ -17,11 +18,16 @@ import {
   Variable,
   Visitor,
   While,
+  Function,
+  Return,
 } from "./Expr";
 import { Lox } from "./Lox";
+import {LoxClock} from "./LoxClock";
+import {LoxFunction} from "./LoxFunction";
+import {ReturnTrhow} from "./ReturnTrhow";
 import { Token } from "./Token";
 import { TokenType } from "./TokenType";
-import { Value } from "./types";
+import { LoxCallable, Value } from "./types";
 
 export const double = (value: Value): number => {
   return Number(value);
@@ -71,7 +77,12 @@ export const checkNumberOperands = (
 };
 
 export class Interpreter implements Visitor<Value> {
-  environment = new Envirnonment();
+  public globals = new Envirnonment();
+  private environment = this.globals;
+
+  constructor() {
+    this.globals.define("clock", new LoxClock());
+  }
 
   visitLiteral(expr: Literal): Value {
     return expr.value;
@@ -188,7 +199,6 @@ export class Interpreter implements Visitor<Value> {
   }
 
   visitBlock(stmt: Block) {
-    debugger;
     this.executeBlock(stmt.statements, new Envirnonment(this.environment));
   }
 
@@ -213,9 +223,54 @@ export class Interpreter implements Visitor<Value> {
   }
 
   visitWhile(stmt: While) {
-    while(Boolean(this.evaluate(stmt.condition))) {
+    while (Boolean(this.evaluate(stmt.condition))) {
       this.evaluate(stmt.body);
     }
+  }
+
+  visitCall(expr: Call) {
+    const callee = this.evaluate(expr.calle);
+
+    // console.log(callee)
+
+    const args: Value[] = [];
+
+    for (const arg of expr.args) {
+      args.push(this.evaluate(arg));
+    }
+
+    if (!(callee instanceof LoxCallable)) {
+      throw new RuntimeError(expr.paren, "Can only call functions and classes");
+    }
+
+    const fn: LoxCallable = callee as LoxCallable;
+
+    if (args.length !== fn.arity()) {
+      throw new RuntimeError(
+        expr.paren,
+        "Expected " + fn.arity() + " arguments, but got " + args.length + "."
+      );
+    }
+
+    return fn.call(this, ...args);
+  }
+
+  visitFunction(stmt: Function) {
+    const fn = new LoxFunction(stmt);
+
+    this.environment.define(stmt.name.lexeme, fn);
+
+    return null;
+  }
+
+  visitReturn(stmt: Return) {
+    let value: Value = null;
+
+    if (stmt.value !== undefined) {
+      value = this.evaluate(stmt.value);
+    }
+
+    throw new ReturnTrhow(value);
   }
 
   evaluate(expr: Expr | Stmt): Value {

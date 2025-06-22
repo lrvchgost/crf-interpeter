@@ -14,6 +14,9 @@ import {
   If,
   Logical,
   While,
+  Call,
+  Function,
+  Return,
 } from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
@@ -46,7 +49,7 @@ export class Parser {
         return new Assign(name, value);
       }
 
-      this._error(equals, "Invalid assignment target")
+      this._error(equals, "Invalid assignment target");
     }
 
     return expr;
@@ -55,10 +58,10 @@ export class Parser {
   or(): Expr {
     let expr = this.and();
 
-    while(this.match(TokenType.OR)) {
-      const operator  = this.previous();
+    while (this.match(TokenType.OR)) {
+      const operator = this.previous();
       const right = this.and();
-      expr =  new Logical(expr, operator, right);
+      expr = new Logical(expr, operator, right);
     }
 
     return expr;
@@ -67,11 +70,11 @@ export class Parser {
   and(): Expr {
     let expr = this.equality();
 
-    while(this.match(TokenType.AND)) {
-      const operator  = this.previous();
+    while (this.match(TokenType.AND)) {
+      const operator = this.previous();
       const right = this.equality();
 
-      expr =  new Logical(expr, operator, right);
+      expr = new Logical(expr, operator, right);
     }
 
     return expr;
@@ -79,6 +82,9 @@ export class Parser {
 
   declaration() {
     try {
+      if (this.match(TokenType.FUN)) {
+        return this.function("function");
+      }
       if (this.match(TokenType.VAR)) {
         return this.varDeclaration();
       }
@@ -87,6 +93,36 @@ export class Parser {
       this.synchronize();
       return;
     }
+  }
+
+  function(kind: "function") {
+    debugger;
+    const name = this.consume(
+      TokenType.IDENTIFIER,
+      "Expect " + kind + " name."
+    );
+
+    this.consume(TokenType.LEFT_PAREN, "Expect '(' after " + kind + " name.");
+
+    const parameters: Token[] = [];
+
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      do {
+        if (parameters.length >= 255) {
+          this._error(this.peek(), "Can't have more thant 255 parameters");
+        }
+        parameters.push(
+          this.consume(TokenType.IDENTIFIER, "Expect parameter name.")
+        );
+      } while (this.match(TokenType.COMMA));
+    }
+
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after " + kind + " name.");
+    this.consume(TokenType.LEFT_BRACE, "Expect '{' before " + kind + " block.");
+
+    const body = this.block();
+
+    return new Function(name, parameters, body);
   }
 
   equality(): Expr {
@@ -192,7 +228,41 @@ export class Parser {
       return new Unary(operator, right);
     }
 
-    return this.primary();
+    return this.call();
+  }
+
+  call() {
+    let expr = this.primary();
+
+    while (true) {
+      if (this.match(TokenType.LEFT_PAREN)) {
+        expr = this.finishCall(expr);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  finishCall(callee: Expr) {
+    const args: Expr[] = [];
+
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      do {
+        if (args.length > 255) {
+          this._error(this.peek(), "Can't have more than 255 arguments.");
+        }
+        args.push(this.expression());
+      } while (this.match(TokenType.COMMA));
+    }
+
+    const paren = this.consume(
+      TokenType.RIGHT_PAREN,
+      "Exprct ')' after arguments."
+    );
+
+    return new Call(callee, paren, args);
   }
 
   primary(): Expr {
@@ -238,6 +308,10 @@ export class Parser {
       return this.printStatement();
     }
 
+    if (this.match(TokenType.RETURN)) {
+      return this.returnStatement();
+    }
+
     if (this.match(TokenType.WHILE)) {
       return this.whileStatement();
     }
@@ -247,6 +321,18 @@ export class Parser {
     }
 
     return this.expressionStatement();
+  }
+
+  returnStatement() {
+    const keyword = this.previous();
+    let value = undefined;
+
+    if(!this.check(TokenType.SEMICOLON)) {
+      value = this.expression();
+    }
+
+    this.consume(TokenType.SEMICOLON, "Expect ';' after return value.");
+    return new Return(keyword, value);
   }
 
   forStatement() {
@@ -284,7 +370,7 @@ export class Parser {
       body = new Block([body, new Expression(increment)]);
     }
 
-    if (condition  === undefined) {
+    if (condition === undefined) {
       condition = new Literal(true);
     }
 
@@ -329,7 +415,7 @@ export class Parser {
   block(): Stmt[] {
     const statements: Stmt[] = [];
 
-    while(!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+    while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
       const declaration = this.declaration();
       declaration && statements.push(declaration);
     }
@@ -410,8 +496,6 @@ export class Parser {
 
   parse() {
     const statements: Stmt[] = [];
-
-    debugger;
 
     while (!this.isAtEnd()) {
       const declaration = this.declaration();

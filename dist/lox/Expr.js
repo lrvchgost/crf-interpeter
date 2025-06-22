@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.While = exports.If = exports.Var = exports.Print = exports.Expression = exports.Block = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = void 0;
+exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = void 0;
 class AST {
 }
 class Assign extends AST {
@@ -92,6 +92,21 @@ class Logical extends AST {
     }
 }
 exports.Logical = Logical;
+class Call extends AST {
+    calle;
+    paren;
+    args;
+    constructor(calle, paren, args) {
+        super();
+        this.calle = calle;
+        this.paren = paren;
+        this.args = args;
+    }
+    visit(visitor) {
+        return visitor.visitCall(this);
+    }
+}
+exports.Call = Call;
 class Block extends AST {
     statements;
     constructor(statements) {
@@ -125,6 +140,19 @@ class Print extends AST {
     }
 }
 exports.Print = Print;
+class Return extends AST {
+    keyword;
+    value;
+    constructor(keyword, value) {
+        super();
+        this.keyword = keyword;
+        this.value = value;
+    }
+    visit(visitor) {
+        return visitor.visitReturn(this);
+    }
+}
+exports.Return = Return;
 class Var extends AST {
     name;
     initializer;
@@ -166,4 +194,19 @@ class While extends AST {
     }
 }
 exports.While = While;
+class Function extends AST {
+    name;
+    params;
+    body;
+    constructor(name, params, body) {
+        super();
+        this.name = name;
+        this.params = params;
+        this.body = body;
+    }
+    visit(visitor) {
+        return visitor.visitFunction(this);
+    }
+}
+exports.Function = Function;
 //# sourceMappingURL=Expr.js.map

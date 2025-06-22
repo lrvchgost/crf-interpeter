@@ -9,12 +9,15 @@ export type Visitor<T> = {
 	visitUnary: (unaryNode: Unary) => T;
 	visitVariable: (variableNode: Variable) => T;
 	visitLogical: (logicalNode: Logical) => T;
+	visitCall: (callNode: Call) => T;
 	visitBlock: (blockNode: Block) => T;
 	visitExpression: (expressionNode: Expression) => T;
 	visitPrint: (printNode: Print) => T;
+	visitReturn: (returnNode: Return) => T;
 	visitVar: (varNode: Var) => T;
 	visitIf: (ifNode: If) => T;
 	visitWhile: (whileNode: While) => T;
+	visitFunction: (functionNode: Function) => T;
 
 }
 
@@ -22,9 +25,9 @@ abstract class AST {
     abstract visit<T>(visitor: Visitor<T>): T
 }
 
-export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical;
+export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical | Call;
 
-export type Stmt = Block | Expression | Print | Var | If | While;
+export type Stmt = Block | Expression | Print | Return | Var | If | While | Function;
 
 
 export class Assign extends AST {
@@ -137,6 +140,24 @@ export class Logical extends AST {
     }
 }
 
+export class Call extends AST {
+	calle: Expr;
+	paren: Token;
+	args: Expr[];
+
+	constructor(calle: Expr, paren: Token, args: Expr[]) {
+		super();
+
+		this.calle = calle;
+		this.paren = paren;
+		this.args = args;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitCall(this);
+    }
+}
+
 
 export class Block extends AST {
 	statements: Stmt[];
@@ -177,6 +198,22 @@ export class Print extends AST {
 
     visit<T>(visitor: Visitor<T>) {
         return visitor.visitPrint(this);
+    }
+}
+
+export class Return extends AST {
+	keyword: Token;
+	value?: Expr;
+
+	constructor(keyword: Token, value?: Expr) {
+		super();
+
+		this.keyword = keyword;
+		this.value = value;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitReturn(this);
     }
 }
 
@@ -227,6 +264,24 @@ export class While extends AST {
 
     visit<T>(visitor: Visitor<T>) {
         return visitor.visitWhile(this);
+    }
+}
+
+export class Function extends AST {
+	name: Token;
+	params: Token[];
+	body: Stmt[];
+
+	constructor(name: Token, params: Token[], body: Stmt[]) {
+		super();
+
+		this.name = name;
+		this.params = params;
+		this.body = body;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitFunction(this);
     }
 }
 

@@ -86,7 +86,8 @@ const exprConfig = {
         `Literal  = value: ${literal}`,
         "Unary    = operator: Token, right: Expr",
         "Variable = name: Token",
-        "Logical  = left: Expr, operator: Token, right: Expr"
+        "Logical  = left: Expr, operator: Token, right: Expr",
+        "Call     = calle: Expr, paren: Token, args: Expr[]"
     ],
 };
 const stmtConfig = {
@@ -95,9 +96,11 @@ const stmtConfig = {
         "Block      = statements: Stmt[]",
         "Expression = expression: Expr",
         "Print      = expression: Expr",
+        "Return     = keyword: Token, value?: Expr",
         "Var        = name: Token, initializer?: Expr",
         "If         = condition: Expr, thenBranch: Stmt, elseBranch?: Stmt",
         "While      = condition: Expr, body: Stmt",
+        "Function   = name: Token, params: Token[], body: Stmt[]",
     ],
 };
 defineAst([exprConfig, stmtConfig]);

@@ -1,0 +1,1 @@
+{"version":3,"file":"LoxClock.js","sourceRoot":"","sources":["../../src/lox/LoxClock.ts"],"names":[],"mappings":";;;AAAA,mCAAsC;AAEtC,MAAa,QAAS,SAAQ,mBAAW;IACvC,IAAI;QACF,OAAO,IAAI,CAAC,GAAG,EAAE,GAAG,IAAI,CAAC;IAC3B,CAAC;IAED,KAAK;QACH,OAAO,CAAC,CAAC;IACX,CAAC;IAED,QAAQ;QACN,OAAO,aAAa,CAAC;IACvB,CAAC;CACF;AAZD,4BAYC"}
