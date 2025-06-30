@@ -256,7 +256,7 @@ export class Interpreter implements Visitor<Value> {
   }
 
   visitFunction(stmt: Function) {
-    const fn = new LoxFunction(stmt);
+    const fn = new LoxFunction(stmt, this.environment);
 
     this.environment.define(stmt.name.lexeme, fn);
 

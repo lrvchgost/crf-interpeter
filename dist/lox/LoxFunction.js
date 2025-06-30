@@ -5,12 +5,14 @@ const types_1 = require("./types");
 const Environment_1 = require("./Environment");
 class LoxFunction extends types_1.LoxCallable {
     declaration;
-    constructor(declaration) {
+    closure;
+    constructor(declaration, closure) {
         super();
         this.declaration = declaration;
+        this.closure = closure;
     }
     call(interpreter, ...argArray) {
-        const environment = new Environment_1.Envirnonment(interpreter.globals);
+        const environment = new Environment_1.Envirnonment(this.closure);
         for (let i = 0; i < this.declaration.params.length; i++) {
             environment.define(this.declaration.params[i].lexeme, argArray[i]);
         }

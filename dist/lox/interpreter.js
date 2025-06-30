@@ -189,7 +189,7 @@ class Interpreter {
         return fn.call(this, ...args);
     }
     visitFunction(stmt) {
-        const fn = new LoxFunction_1.LoxFunction(stmt);
+        const fn = new LoxFunction_1.LoxFunction(stmt, this.environment);
         this.environment.define(stmt.name.lexeme, fn);
         return null;
     }

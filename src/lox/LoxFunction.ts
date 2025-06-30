@@ -6,14 +6,16 @@ import {ReturnTrhow} from "./ReturnTrhow";
 
 export class LoxFunction extends LoxCallable {
   private declaration: Function;
+  private closure: Envirnonment;
 
-  constructor(declaration: Function) {
+  constructor(declaration: Function, closure: Envirnonment) {
     super();
     this.declaration = declaration;
+    this.closure = closure;
   }
 
   call(interpreter: Interpreter, ...argArray: Value[]) {
-    const environment = new Envirnonment(interpreter.globals);
+    const environment = new Envirnonment(this.closure);
 
     for (let i = 0; i < this.declaration.params.length; i++) {
       environment.define(this.declaration.params[i].lexeme, argArray[i]);
