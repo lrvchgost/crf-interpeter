@@ -38,4 +38,22 @@ export class Envirnonment {
 
     throw new RuntimeError(name, "Undefined vairable '" + name.lexeme + "'.");
   }
+
+  getAt(distance: number, name: string) {
+    return this.ancestor(distance).values.get(name);
+  }
+
+  assignAt(distance: number, name: Token, value: Value) {
+    return this.ancestor(distance).values.set(name.lexeme, value);
+  }
+
+  ancestor(distance: number) {
+    let env: Envirnonment = this;
+
+    for (let i = 0; i < distance; i++) {
+      env = env.enclosing as Envirnonment;
+    }
+
+    return env;
+  }
 }

@@ -12,11 +12,13 @@ const Parser_1 = require("../Parser");
 const Token_1 = require("./Token");
 const TokenType_1 = require("./TokenType");
 const interpreter_1 = require("./interpreter");
+const resolver_1 = require("./resolver");
 class Lox {
     sourceFolder;
     static hadError = false;
     static hadRuntimeError = false;
     interpreter = new interpreter_1.Interpreter();
+    resolver = new resolver_1.Resolver(this.interpreter);
     constructor(args, sourceFolder) {
         this.sourceFolder = sourceFolder;
         if (args.length > 1) {
@@ -91,14 +93,14 @@ class Lox {
         const scanner = new Scanner_1.Scanner(source);
         const tokens = scanner.scanTokens();
         const parser = new Parser_1.Parser(tokens);
-        const expr = parser.parse();
+        const statements = parser.parse();
+        const resolver = new resolver_1.Resolver(this.interpreter);
+        resolver.resolve(statements);
         if (Lox.hadError) {
             return;
         }
-        if (!expr) {
-            return;
-        }
-        this.interpreter.interpret(expr);
+        console.log(this.interpreter.locals);
+        this.interpreter.interpret(statements);
     }
     static runtimeError(error) {
         console.error(`${error.message} [line ${error.token.line}]`);

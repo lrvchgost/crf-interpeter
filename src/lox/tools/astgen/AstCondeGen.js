@@ -32,7 +32,7 @@ const defineAst = (astConfig) => {
     let cl = "";
     for (let c of config.classes) {
       const [name, params] = c.split("=");
-      cl += `export class ${name.trim()} extends AST {
+      cl += `export class ${name.trim()} extends ${config.base} {
 ${defineType(params.split(","))}
 \tconstructor(${params.trim()}) {
 \t\tsuper();
@@ -84,6 +84,12 @@ abstract class AST {
     abstract visit<T>(visitor: Visitor<T>): T
 }
 
+export abstract class StmtBase extends AST {
+}
+
+export abstract class ExprBase extends AST {
+}
+
 ${astConfig.map((config) => generateTypes(config)).join('\n')}
 
 ${astConfig.map((config) => defineClasses(config)).join('\n')}`;
@@ -95,6 +101,7 @@ ${astConfig.map((config) => defineClasses(config)).join('\n')}`;
 
 const exprConfig = {
   output: "Expr",
+  base: 'ExprBase',
   classes: [
     "Assign   = name: Token, value: Expr",
     "Binary   = left: Expr, operator: Token, right: Expr",
@@ -109,6 +116,7 @@ const exprConfig = {
 
 const stmtConfig = {
   output: "Stmt",
+  base: 'StmtBase',
   classes: [
     "Block      = statements: Stmt[]",
     "Expression = expression: Expr",

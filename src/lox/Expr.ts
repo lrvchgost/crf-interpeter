@@ -25,12 +25,18 @@ abstract class AST {
     abstract visit<T>(visitor: Visitor<T>): T
 }
 
+export abstract class StmtBase extends AST {
+}
+
+export abstract class ExprBase extends AST {
+}
+
 export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical | Call;
 
 export type Stmt = Block | Expression | Print | Return | Var | If | While | Function;
 
 
-export class Assign extends AST {
+export class Assign extends ExprBase {
 	name: Token;
 	value: Expr;
 
@@ -46,7 +52,7 @@ export class Assign extends AST {
     }
 }
 
-export class Binary extends AST {
+export class Binary extends ExprBase {
 	left: Expr;
 	operator: Token;
 	right: Expr;
@@ -64,7 +70,7 @@ export class Binary extends AST {
     }
 }
 
-export class Grouping extends AST {
+export class Grouping extends ExprBase {
 	expression: Expr;
 
 	constructor(expression: Expr) {
@@ -78,7 +84,7 @@ export class Grouping extends AST {
     }
 }
 
-export class Literal extends AST {
+export class Literal extends ExprBase {
 	value: number | string | boolean | null;
 
 	constructor(value: number | string | boolean | null) {
@@ -92,7 +98,7 @@ export class Literal extends AST {
     }
 }
 
-export class Unary extends AST {
+export class Unary extends ExprBase {
 	operator: Token;
 	right: Expr;
 
@@ -108,7 +114,7 @@ export class Unary extends AST {
     }
 }
 
-export class Variable extends AST {
+export class Variable extends ExprBase {
 	name: Token;
 
 	constructor(name: Token) {
@@ -122,7 +128,7 @@ export class Variable extends AST {
     }
 }
 
-export class Logical extends AST {
+export class Logical extends ExprBase {
 	left: Expr;
 	operator: Token;
 	right: Expr;
@@ -140,7 +146,7 @@ export class Logical extends AST {
     }
 }
 
-export class Call extends AST {
+export class Call extends ExprBase {
 	calle: Expr;
 	paren: Token;
 	args: Expr[];
@@ -159,7 +165,7 @@ export class Call extends AST {
 }
 
 
-export class Block extends AST {
+export class Block extends StmtBase {
 	statements: Stmt[];
 
 	constructor(statements: Stmt[]) {
@@ -173,7 +179,7 @@ export class Block extends AST {
     }
 }
 
-export class Expression extends AST {
+export class Expression extends StmtBase {
 	expression: Expr;
 
 	constructor(expression: Expr) {
@@ -187,7 +193,7 @@ export class Expression extends AST {
     }
 }
 
-export class Print extends AST {
+export class Print extends StmtBase {
 	expression: Expr;
 
 	constructor(expression: Expr) {
@@ -201,7 +207,7 @@ export class Print extends AST {
     }
 }
 
-export class Return extends AST {
+export class Return extends StmtBase {
 	keyword: Token;
 	value?: Expr;
 
@@ -217,7 +223,7 @@ export class Return extends AST {
     }
 }
 
-export class Var extends AST {
+export class Var extends StmtBase {
 	name: Token;
 	initializer?: Expr;
 
@@ -233,7 +239,7 @@ export class Var extends AST {
     }
 }
 
-export class If extends AST {
+export class If extends StmtBase {
 	condition: Expr;
 	thenBranch: Stmt;
 	elseBranch?: Stmt;
@@ -251,7 +257,7 @@ export class If extends AST {
     }
 }
 
-export class While extends AST {
+export class While extends StmtBase {
 	condition: Expr;
 	body: Stmt;
 
@@ -267,7 +273,7 @@ export class While extends AST {
     }
 }
 
-export class Function extends AST {
+export class Function extends StmtBase {
 	name: Token;
 	params: Token[];
 	body: Stmt[];

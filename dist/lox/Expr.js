@@ -1,9 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = void 0;
+exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = exports.ExprBase = exports.StmtBase = void 0;
 class AST {
 }
-class Assign extends AST {
+class StmtBase extends AST {
+}
+exports.StmtBase = StmtBase;
+class ExprBase extends AST {
+}
+exports.ExprBase = ExprBase;
+class Assign extends ExprBase {
     name;
     value;
     constructor(name, value) {
@@ -16,7 +22,7 @@ class Assign extends AST {
     }
 }
 exports.Assign = Assign;
-class Binary extends AST {
+class Binary extends ExprBase {
     left;
     operator;
     right;
@@ -31,7 +37,7 @@ class Binary extends AST {
     }
 }
 exports.Binary = Binary;
-class Grouping extends AST {
+class Grouping extends ExprBase {
     expression;
     constructor(expression) {
         super();
@@ -42,7 +48,7 @@ class Grouping extends AST {
     }
 }
 exports.Grouping = Grouping;
-class Literal extends AST {
+class Literal extends ExprBase {
     value;
     constructor(value) {
         super();
@@ -53,7 +59,7 @@ class Literal extends AST {
     }
 }
 exports.Literal = Literal;
-class Unary extends AST {
+class Unary extends ExprBase {
     operator;
     right;
     constructor(operator, right) {
@@ -66,7 +72,7 @@ class Unary extends AST {
     }
 }
 exports.Unary = Unary;
-class Variable extends AST {
+class Variable extends ExprBase {
     name;
     constructor(name) {
         super();
@@ -77,7 +83,7 @@ class Variable extends AST {
     }
 }
 exports.Variable = Variable;
-class Logical extends AST {
+class Logical extends ExprBase {
     left;
     operator;
     right;
@@ -92,7 +98,7 @@ class Logical extends AST {
     }
 }
 exports.Logical = Logical;
-class Call extends AST {
+class Call extends ExprBase {
     calle;
     paren;
     args;
@@ -107,7 +113,7 @@ class Call extends AST {
     }
 }
 exports.Call = Call;
-class Block extends AST {
+class Block extends StmtBase {
     statements;
     constructor(statements) {
         super();
@@ -118,7 +124,7 @@ class Block extends AST {
     }
 }
 exports.Block = Block;
-class Expression extends AST {
+class Expression extends StmtBase {
     expression;
     constructor(expression) {
         super();
@@ -129,7 +135,7 @@ class Expression extends AST {
     }
 }
 exports.Expression = Expression;
-class Print extends AST {
+class Print extends StmtBase {
     expression;
     constructor(expression) {
         super();
@@ -140,7 +146,7 @@ class Print extends AST {
     }
 }
 exports.Print = Print;
-class Return extends AST {
+class Return extends StmtBase {
     keyword;
     value;
     constructor(keyword, value) {
@@ -153,7 +159,7 @@ class Return extends AST {
     }
 }
 exports.Return = Return;
-class Var extends AST {
+class Var extends StmtBase {
     name;
     initializer;
     constructor(name, initializer) {
@@ -166,7 +172,7 @@ class Var extends AST {
     }
 }
 exports.Var = Var;
-class If extends AST {
+class If extends StmtBase {
     condition;
     thenBranch;
     elseBranch;
@@ -181,7 +187,7 @@ class If extends AST {
     }
 }
 exports.If = If;
-class While extends AST {
+class While extends StmtBase {
     condition;
     body;
     constructor(condition, body) {
@@ -194,7 +200,7 @@ class While extends AST {
     }
 }
 exports.While = While;
-class Function extends AST {
+class Function extends StmtBase {
     name;
     params;
     body;

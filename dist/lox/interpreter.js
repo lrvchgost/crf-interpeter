@@ -49,6 +49,7 @@ const checkNumberOperands = (operator, left, right) => {
 exports.checkNumberOperands = checkNumberOperands;
 class Interpreter {
     globals = new Environment_1.Envirnonment();
+    locals = new Map();
     environment = this.globals;
     constructor() {
         this.globals.define("clock", new LoxClock_1.LoxClock());
@@ -131,7 +132,16 @@ class Interpreter {
         console.log(this.stringify(expression));
     }
     visitVariable(expr) {
-        return this.environment.get(expr.name);
+        return this.lookUpVariable(expr.name, expr);
+    }
+    lookUpVariable(name, expr) {
+        const distance = this.locals.get(expr);
+        if (distance !== undefined) {
+            return this.environment.getAt(distance, name.lexeme);
+        }
+        else {
+            return this.globals.get(name);
+        }
     }
     visitVar(stmt) {
         let value = null;
@@ -142,7 +152,13 @@ class Interpreter {
     }
     visitAssign(expr) {
         const value = this.evaluate(expr.value);
-        this.environment.assign(expr.name, value);
+        const distance = this.locals.get(expr);
+        if (distance !== undefined) {
+            this.environment.assignAt(distance, expr.name, value);
+        }
+        else {
+            this.globals.assign(expr.name, value);
+        }
         return value;
     }
     visitBlock(stmt) {
@@ -217,6 +233,9 @@ class Interpreter {
         finally {
             this.environment = previous;
         }
+    }
+    resolve(expr, depth) {
+        this.locals.set(expr, depth);
     }
     interpret(statemets) {
         try {

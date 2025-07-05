@@ -111,23 +111,41 @@
 // }
 
 
-fun makeCounter() {
-  print "start";
+// fun makeCounter() {
+//   print "start";
+// 
+//   var i = 0;
+// 
+//   fun count() {
+//     i = i + 1;
+// 
+//     print i;
+//   }
+// 
+//   return count;
+// }
+// 
+// var counter = makeCounter();
+// 
+// counter();
+// counter();
+// counter();
 
-  var i = 0;
 
-  fun count() {
-    i = i + 1;
+var a = "global";
 
-    print i;
+// return a;
+
+{
+  fun SayHi() {
+    print a;
   }
 
-  return count;
+  SayHi();
+
+  var a = "local";
+  // var a = "local";
+
+  SayHi();
 }
-
-var counter = makeCounter();
-
-counter();
-counter();
-counter();
 

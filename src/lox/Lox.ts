@@ -9,11 +9,13 @@ import { Token } from "./Token";
 import { TokenType } from "./TokenType";
 import { RuntimeError } from "./error";
 import { Interpreter } from "./interpreter";
+import {Resolver} from "./resolver";
 
 export class Lox {
   static hadError = false;
   static hadRuntimeError = false;
   interpreter = new Interpreter();
+  resolver = new Resolver(this.interpreter);
 
   constructor(args: string[], private sourceFolder: string) {
     // console.log(args)
@@ -112,23 +114,20 @@ export class Lox {
   run(source: string) {
     const scanner = new Scanner(source);
     const tokens = scanner.scanTokens();
-    // console.log(tokens)
     const parser = new Parser(tokens);
 
-    const expr = parser.parse();
+    const statements = parser.parse();
 
-    // console.log(Lox.hadError);
-    // console.log('expr', expr);
+    const resolver = new Resolver(this.interpreter);
+    resolver.resolve(statements);
 
     if (Lox.hadError) {
       return;
     }
 
-    if (!expr) {
-      return;
-    }
+    console.log(this.interpreter.locals);
 
-    this.interpreter.interpret(expr);
+    this.interpreter.interpret(statements);
   }
 
   static runtimeError(error: RuntimeError) {

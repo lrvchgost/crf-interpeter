@@ -30,6 +30,19 @@ class Envirnonment {
         }
         throw new error_1.RuntimeError(name, "Undefined vairable '" + name.lexeme + "'.");
     }
+    getAt(distance, name) {
+        return this.ancestor(distance).values.get(name);
+    }
+    assignAt(distance, name, value) {
+        return this.ancestor(distance).values.set(name.lexeme, value);
+    }
+    ancestor(distance) {
+        let env = this;
+        for (let i = 0; i < distance; i++) {
+            env = env.enclosing;
+        }
+        return env;
+    }
 }
 exports.Envirnonment = Envirnonment;
 //# sourceMappingURL=Environment.js.map

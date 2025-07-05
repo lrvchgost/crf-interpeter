@@ -22,9 +22,9 @@ import {
   Return,
 } from "./Expr";
 import { Lox } from "./Lox";
-import {LoxClock} from "./LoxClock";
-import {LoxFunction} from "./LoxFunction";
-import {ReturnTrhow} from "./ReturnTrhow";
+import { LoxClock } from "./LoxClock";
+import { LoxFunction } from "./LoxFunction";
+import { ReturnTrhow } from "./ReturnTrhow";
 import { Token } from "./Token";
 import { TokenType } from "./TokenType";
 import { LoxCallable, Value } from "./types";
@@ -78,6 +78,7 @@ export const checkNumberOperands = (
 
 export class Interpreter implements Visitor<Value> {
   public globals = new Envirnonment();
+  public locals = new Map<Expr, number>();
   private environment = this.globals;
 
   constructor() {
@@ -177,7 +178,17 @@ export class Interpreter implements Visitor<Value> {
   }
 
   visitVariable(expr: Variable): Value {
-    return this.environment.get(expr.name);
+    return this.lookUpVariable(expr.name, expr);
+  }
+
+  lookUpVariable(name: Token, expr: Expr) {
+    const distance = this.locals.get(expr);
+
+    if (distance !== undefined) {
+      return this.environment.getAt(distance, name.lexeme);
+    } else {
+      return this.globals.get(name);
+    }
   }
 
   visitVar(stmt: Var): void {
@@ -192,8 +203,13 @@ export class Interpreter implements Visitor<Value> {
 
   visitAssign(expr: Assign): Value {
     const value = this.evaluate(expr.value);
+    const distance = this.locals.get(expr);
 
-    this.environment.assign(expr.name, value);
+    if (distance !== undefined) {
+      this.environment.assignAt(distance, expr.name, value);
+    } else {
+      this.globals.assign(expr.name, value);
+    }
 
     return value;
   }
@@ -293,6 +309,10 @@ export class Interpreter implements Visitor<Value> {
     } finally {
       this.environment = previous;
     }
+  }
+
+  resolve(expr: Expr, depth: number) {
+    this.locals.set(expr, depth);
   }
 
   interpret(statemets: Stmt[]) {
