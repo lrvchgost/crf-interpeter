@@ -1,0 +1,50 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LoxInstance = exports.LoxClass = void 0;
+const error_1 = require("./error");
+const types_1 = require("./types");
+class LoxClass extends types_1.LoxCallable {
+    name;
+    constructor(name) {
+        super();
+        this.name = name;
+    }
+    call(interpreter, ...argArray) {
+        console.log("hey", interpreter);
+        console.log("hey", argArray);
+        const instance = new LoxInstance(this);
+        return instance;
+    }
+    arity() {
+        return 0;
+    }
+    toString() {
+        return this.name;
+    }
+}
+exports.LoxClass = LoxClass;
+class LoxInstance {
+    kclass;
+    fields = new Map();
+    constructor(kclass) {
+        this.kclass = kclass;
+    }
+    toString() {
+        return this.kclass.name + " instance";
+    }
+    get(name) {
+        if (this.fields.has(name.lexeme)) {
+            return this.fields.get(name.lexeme);
+        }
+        throw new error_1.RuntimeError(name, "Undefined property '" +
+            name.lexeme +
+            "'. Accessing on the instance of class '" +
+            this.kclass.name +
+            "'.");
+    }
+    set(name, value) {
+        this.fields.set(name.lexeme, value);
+    }
+}
+exports.LoxInstance = LoxInstance;
+//# sourceMappingURL=LoxClass.js.map

@@ -19,6 +19,9 @@ import {
   Grouping,
   Logical,
   Unary,
+  Class,
+  Get,
+  Set,
 } from "./Expr";
 import { Interpreter } from "./interpreter";
 import { Lox } from "./Lox";
@@ -156,6 +159,20 @@ export class Resolver implements Visitor<Value> {
   visitAssign(expr: Assign) {
     this.resolve(expr.value);
     this.resolveLocal(expr, expr.name);
+  }
+
+  visitGet(expr: Get) {
+    this.resolve(expr.object);
+  }
+
+  visitSet(expr: Set) {
+    this.resolve(expr.value);
+    this.resolve(expr.object);
+  }
+
+  visitClass(stmt: Class) {
+    this.declare(stmt.name);
+    this.define(stmt.name);
   }
 
   visitFunction(stmt: Function) {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = exports.ExprBase = exports.StmtBase = void 0;
+exports.Class = exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.Set = exports.Get = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = exports.ExprBase = exports.StmtBase = void 0;
 class AST {
 }
 class StmtBase extends AST {
@@ -113,6 +113,34 @@ class Call extends ExprBase {
     }
 }
 exports.Call = Call;
+class Get extends ExprBase {
+    object;
+    name;
+    constructor(object, name) {
+        super();
+        this.object = object;
+        this.name = name;
+    }
+    visit(visitor) {
+        return visitor.visitGet(this);
+    }
+}
+exports.Get = Get;
+class Set extends ExprBase {
+    object;
+    name;
+    value;
+    constructor(object, name, value) {
+        super();
+        this.object = object;
+        this.name = name;
+        this.value = value;
+    }
+    visit(visitor) {
+        return visitor.visitSet(this);
+    }
+}
+exports.Set = Set;
 class Block extends StmtBase {
     statements;
     constructor(statements) {
@@ -215,4 +243,17 @@ class Function extends StmtBase {
     }
 }
 exports.Function = Function;
+class Class extends StmtBase {
+    name;
+    methods;
+    constructor(name, methods) {
+        super();
+        this.name = name;
+        this.methods = methods;
+    }
+    visit(visitor) {
+        return visitor.visitClass(this);
+    }
+}
+exports.Class = Class;
 //# sourceMappingURL=Expr.js.map

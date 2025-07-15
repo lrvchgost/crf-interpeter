@@ -106,6 +106,17 @@ class Resolver {
         this.resolve(expr.value);
         this.resolveLocal(expr, expr.name);
     }
+    visitGet(expr) {
+        this.resolve(expr.object);
+    }
+    visitSet(expr) {
+        this.resolve(expr.value);
+        this.resolve(expr.object);
+    }
+    visitClass(stmt) {
+        this.declare(stmt.name);
+        this.define(stmt.name);
+    }
     visitFunction(stmt) {
         this.declare(stmt.name);
         this.define(stmt.name);

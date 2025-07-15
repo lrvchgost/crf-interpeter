@@ -4,6 +4,7 @@ exports.Interpreter = exports.checkNumberOperands = exports.checkNumberOperand =
 const Environment_1 = require("./Environment");
 const error_1 = require("./error");
 const Lox_1 = require("./Lox");
+const LoxClass_1 = require("./LoxClass");
 const LoxClock_1 = require("./LoxClock");
 const LoxFunction_1 = require("./LoxFunction");
 const ReturnTrhow_1 = require("./ReturnTrhow");
@@ -189,6 +190,23 @@ class Interpreter {
             this.evaluate(stmt.body);
         }
     }
+    visitSet(expr) {
+        debugger;
+        const object = this.evaluate(expr.object);
+        if (!(object instanceof LoxClass_1.LoxInstance)) {
+            throw new error_1.RuntimeError(expr.name, "Only instances have fields.");
+        }
+        const value = this.evaluate(expr.value);
+        object.set(expr.name, value);
+        return value;
+    }
+    visitGet(expr) {
+        const object = this.evaluate(expr.object);
+        if (object instanceof LoxClass_1.LoxInstance) {
+            return object.get(expr.name);
+        }
+        throw new error_1.RuntimeError(expr.name, "Only instances have properties.");
+    }
     visitCall(expr) {
         const callee = this.evaluate(expr.calle);
         const args = [];
@@ -203,6 +221,12 @@ class Interpreter {
             throw new error_1.RuntimeError(expr.paren, "Expected " + fn.arity() + " arguments, but got " + args.length + ".");
         }
         return fn.call(this, ...args);
+    }
+    visitClass(stmt) {
+        this.environment.define(stmt.name.lexeme, null);
+        const kclass = new LoxClass_1.LoxClass(stmt.name.lexeme);
+        this.environment.assign(stmt.name, kclass);
+        return null;
     }
     visitFunction(stmt) {
         const fn = new LoxFunction_1.LoxFunction(stmt, this.environment);

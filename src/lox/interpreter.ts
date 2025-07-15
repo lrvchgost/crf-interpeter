@@ -20,8 +20,12 @@ import {
   While,
   Function,
   Return,
+  Class,
+  Get,
+  Set,
 } from "./Expr";
 import { Lox } from "./Lox";
+import {LoxClass, LoxInstance} from "./LoxClass";
 import { LoxClock } from "./LoxClock";
 import { LoxFunction } from "./LoxFunction";
 import { ReturnTrhow } from "./ReturnTrhow";
@@ -244,10 +248,33 @@ export class Interpreter implements Visitor<Value> {
     }
   }
 
+  visitSet(expr: Set) {
+    debugger;
+    const object = this.evaluate(expr.object);
+
+    if (!(object instanceof LoxInstance)) {
+      throw new RuntimeError(expr.name, "Only instances have fields.");
+    }
+
+    const value = this.evaluate(expr.value);
+
+    object.set(expr.name, value);
+
+    return value;
+  }
+
+  visitGet(expr: Get) {
+    const object = this.evaluate(expr.object);
+
+    if (object instanceof LoxInstance) {
+      return object.get(expr.name);
+    }
+
+    throw new RuntimeError(expr.name, "Only instances have properties.");
+  }
+
   visitCall(expr: Call) {
     const callee = this.evaluate(expr.calle);
-
-    // console.log(callee)
 
     const args: Value[] = [];
 
@@ -269,6 +296,16 @@ export class Interpreter implements Visitor<Value> {
     }
 
     return fn.call(this, ...args);
+  }
+
+  visitClass(stmt: Class) {
+    this.environment.define(stmt.name.lexeme, null);
+
+    const kclass = new LoxClass(stmt.name.lexeme);
+
+    this.environment.assign(stmt.name, kclass);
+
+    return null;
   }
 
   visitFunction(stmt: Function) {

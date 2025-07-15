@@ -132,20 +132,39 @@
 // counter();
 
 
-var a = "global";
+// var a = "global";
+// 
+// // return a;
+// 
+// {
+//   fun SayHi() {
+//     print a;
+//   }
+// 
+//   SayHi();
+// 
+//   var a = "local";
+//   // var a = "local";
+// 
+//   SayHi();
+// }
 
-// return a;
+class MySuperClass {}
 
-{
-  fun SayHi() {
-    print a;
-  }
+var a = MySuperClass();
+var b = MySuperClass();
+var c = MySuperClass();
 
-  SayHi();
+a.name = b;
+b.name = c;
+c.name = "c";
 
-  var a = "local";
-  // var a = "local";
+print a.name.name.name;
+print a.name;
+print b.name;
+print c.name;
 
-  SayHi();
-}
+a.name.name.name = "hello";
 
+print a.name.name.name;
+print c.name;

@@ -4,7 +4,7 @@ exports.RuntimeError = void 0;
 class RuntimeError extends Error {
     token;
     constructor(token, message) {
-        super(message);
+        super("[RuntimeError]: " + message);
         this.token = token;
     }
 }

@@ -24,6 +24,10 @@ class Parser {
                 const name = expr.name;
                 return new Expr_1.Assign(name, value);
             }
+            else if (expr instanceof Expr_1.Get) {
+                const get = expr;
+                return new Expr_1.Set(get.object, get.name, value);
+            }
             this._error(equals, "Invalid assignment target");
         }
         return expr;
@@ -48,6 +52,9 @@ class Parser {
     }
     declaration() {
         try {
+            if (this.match(TokenType_1.TokenType.CLASS)) {
+                return this.classDeclaration();
+            }
             if (this.match(TokenType_1.TokenType.FUN)) {
                 return this.function("function");
             }
@@ -61,8 +68,17 @@ class Parser {
             return;
         }
     }
+    classDeclaration() {
+        const name = this.consume(TokenType_1.TokenType.IDENTIFIER, "Expect class name.");
+        this.consume(TokenType_1.TokenType.LEFT_BRACE, "Expect '{' before class body.");
+        const methods = [];
+        while (!this.check(TokenType_1.TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+            methods.push(this.function("method"));
+        }
+        this.consume(TokenType_1.TokenType.RIGHT_BRACE, "Expect '}' after class body.");
+        return new Expr_1.Class(name, methods);
+    }
     function(kind) {
-        debugger;
         const name = this.consume(TokenType_1.TokenType.IDENTIFIER, "Expect " + kind + " name.");
         this.consume(TokenType_1.TokenType.LEFT_PAREN, "Expect '(' after " + kind + " name.");
         const parameters = [];
@@ -156,6 +172,10 @@ class Parser {
         while (true) {
             if (this.match(TokenType_1.TokenType.LEFT_PAREN)) {
                 expr = this.finishCall(expr);
+            }
+            else if (this.match(TokenType_1.TokenType.DOT)) {
+                const name = this.consume(TokenType_1.TokenType.IDENTIFIER, "Expect property name after '.'.");
+                expr = new Expr_1.Get(expr, name);
             }
             else {
                 break;

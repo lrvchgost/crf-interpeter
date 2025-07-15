@@ -10,6 +10,8 @@ export type Visitor<T> = {
 	visitVariable: (variableNode: Variable) => T;
 	visitLogical: (logicalNode: Logical) => T;
 	visitCall: (callNode: Call) => T;
+	visitGet: (getNode: Get) => T;
+	visitSet: (setNode: Set) => T;
 	visitBlock: (blockNode: Block) => T;
 	visitExpression: (expressionNode: Expression) => T;
 	visitPrint: (printNode: Print) => T;
@@ -18,6 +20,7 @@ export type Visitor<T> = {
 	visitIf: (ifNode: If) => T;
 	visitWhile: (whileNode: While) => T;
 	visitFunction: (functionNode: Function) => T;
+	visitClass: (classNode: Class) => T;
 
 }
 
@@ -31,9 +34,9 @@ export abstract class StmtBase extends AST {
 export abstract class ExprBase extends AST {
 }
 
-export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical | Call;
+export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical | Call | Get | Set;
 
-export type Stmt = Block | Expression | Print | Return | Var | If | While | Function;
+export type Stmt = Block | Expression | Print | Return | Var | If | While | Function | Class;
 
 
 export class Assign extends ExprBase {
@@ -164,6 +167,40 @@ export class Call extends ExprBase {
     }
 }
 
+export class Get extends ExprBase {
+	object: Expr;
+	name: Token;
+
+	constructor(object: Expr, name: Token) {
+		super();
+
+		this.object = object;
+		this.name = name;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitGet(this);
+    }
+}
+
+export class Set extends ExprBase {
+	object: Expr;
+	name: Token;
+	value: Expr;
+
+	constructor(object: Expr, name: Token, value: Expr) {
+		super();
+
+		this.object = object;
+		this.name = name;
+		this.value = value;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitSet(this);
+    }
+}
+
 
 export class Block extends StmtBase {
 	statements: Stmt[];
@@ -288,6 +325,22 @@ export class Function extends StmtBase {
 
     visit<T>(visitor: Visitor<T>) {
         return visitor.visitFunction(this);
+    }
+}
+
+export class Class extends StmtBase {
+	name: Token;
+	methods: Function[];
+
+	constructor(name: Token, methods: Function[]) {
+		super();
+
+		this.name = name;
+		this.methods = methods;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitClass(this);
     }
 }
 

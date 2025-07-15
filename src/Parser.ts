@@ -17,6 +17,9 @@ import {
   Call,
   Function,
   Return,
+  Class,
+  Get,
+  Set,
 } from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
@@ -47,6 +50,9 @@ export class Parser {
       if (expr instanceof Variable) {
         const name = expr.name;
         return new Assign(name, value);
+      } else if (expr instanceof Get) {
+        const get = expr;
+        return new Set(get.object, get.name, value);
       }
 
       this._error(equals, "Invalid assignment target");
@@ -82,6 +88,9 @@ export class Parser {
 
   declaration() {
     try {
+      if (this.match(TokenType.CLASS)) {
+        return this.classDeclaration();
+      }
       if (this.match(TokenType.FUN)) {
         return this.function("function");
       }
@@ -95,8 +104,23 @@ export class Parser {
     }
   }
 
-  function(kind: "function") {
-    debugger;
+  classDeclaration() {
+    const name = this.consume(TokenType.IDENTIFIER, "Expect class name.");
+
+    this.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.");
+
+    const methods: Function[] = [];
+
+    while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      methods.push(this.function("method"));
+    }
+
+    this.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
+
+    return new Class(name, methods);
+  }
+
+  function(kind: "function" | "method") {
     const name = this.consume(
       TokenType.IDENTIFIER,
       "Expect " + kind + " name."
@@ -237,6 +261,12 @@ export class Parser {
     while (true) {
       if (this.match(TokenType.LEFT_PAREN)) {
         expr = this.finishCall(expr);
+      } else if (this.match(TokenType.DOT)) {
+        const name = this.consume(
+          TokenType.IDENTIFIER,
+          "Expect property name after '.'."
+        );
+        expr = new Get(expr, name);
       } else {
         break;
       }
@@ -327,7 +357,7 @@ export class Parser {
     const keyword = this.previous();
     let value = undefined;
 
-    if(!this.check(TokenType.SEMICOLON)) {
+    if (!this.check(TokenType.SEMICOLON)) {
       value = this.expression();
     }
 
