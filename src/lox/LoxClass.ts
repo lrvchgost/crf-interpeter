@@ -1,4 +1,5 @@
 import { RuntimeError } from "./error";
+import {Interpreter} from "./interpreter";
 import { LoxFunction } from "./LoxFunction";
 import { Token } from "./Token";
 import { LoxCallable, Value } from "./types";
@@ -13,13 +14,25 @@ export class LoxClass extends LoxCallable {
     this.methods = methods;
   }
 
-  call() {
+  call(interpreter: Interpreter, ...argArray: Value[]) {
     const instance = new LoxInstance(this);
+
+    const initializer = this.findMethod('init');
+
+    if (initializer) {
+      initializer.bind(instance).call(interpreter, ...argArray);
+    }
+
     return instance;
   }
 
   arity() {
-    return 0;
+    const initializer = this.findMethod('init');
+
+    if (!initializer) {
+      return 0;
+    }
+    return initializer.arity();
   }
 
   toString() {

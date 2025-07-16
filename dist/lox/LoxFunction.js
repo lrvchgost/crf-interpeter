@@ -6,10 +6,12 @@ const Environment_1 = require("./Environment");
 class LoxFunction extends types_1.LoxCallable {
     declaration;
     closure;
-    constructor(declaration, closure) {
+    isInitializer = false;
+    constructor(declaration, closure, isInitializer) {
         super();
         this.declaration = declaration;
         this.closure = closure;
+        this.isInitializer = isInitializer;
     }
     call(interpreter, ...argArray) {
         const environment = new Environment_1.Envirnonment(this.closure);
@@ -20,8 +22,14 @@ class LoxFunction extends types_1.LoxCallable {
             interpreter.executeBlock(this.declaration.body, environment);
         }
         catch (returnValue) {
+            if (this.isInitializer) {
+                return this.closure.getAt(0, "this");
+            }
             const value = returnValue;
             return value.value;
+        }
+        if (this.isInitializer) {
+            return this.closure.getAt(0, "this");
         }
         return null;
     }
@@ -33,8 +41,8 @@ class LoxFunction extends types_1.LoxCallable {
     }
     bind(instance) {
         const environment = new Environment_1.Envirnonment(this.closure);
-        environment.define('this', instance);
-        return new LoxFunction(this.declaration, environment);
+        environment.define("this", instance);
+        return new LoxFunction(this.declaration, environment, this.isInitializer);
     }
 }
 exports.LoxFunction = LoxFunction;

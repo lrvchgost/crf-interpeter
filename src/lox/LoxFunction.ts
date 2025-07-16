@@ -3,16 +3,22 @@ import { Function } from "./Expr";
 import { Interpreter } from "./interpreter";
 import { Envirnonment } from "./Environment";
 import { ReturnTrhow } from "./ReturnTrhow";
-import {LoxInstance} from "./LoxClass";
+import { LoxInstance } from "./LoxClass";
 
 export class LoxFunction extends LoxCallable {
   private declaration: Function;
   private closure: Envirnonment;
+  private isInitializer: boolean = false;
 
-  constructor(declaration: Function, closure: Envirnonment) {
+  constructor(
+    declaration: Function,
+    closure: Envirnonment,
+    isInitializer: boolean
+  ) {
     super();
     this.declaration = declaration;
     this.closure = closure;
+    this.isInitializer = isInitializer;
   }
 
   call(interpreter: Interpreter, ...argArray: Value[]) {
@@ -25,8 +31,15 @@ export class LoxFunction extends LoxCallable {
     try {
       interpreter.executeBlock(this.declaration.body, environment);
     } catch (returnValue) {
+      if (this.isInitializer) {
+        return this.closure.getAt(0, "this");
+      }
       const value: ReturnTrhow = returnValue as ReturnTrhow;
       return value.value;
+    }
+
+    if (this.isInitializer) {
+      return this.closure.getAt(0, "this");
     }
 
     return null;
@@ -39,12 +52,12 @@ export class LoxFunction extends LoxCallable {
   toString() {
     return "<fn " + this.declaration.name.lexeme + ">";
   }
-  
+
   bind(instance: LoxInstance) {
     const environment = new Envirnonment(this.closure);
 
-    environment.define('this', instance);
+    environment.define("this", instance);
 
-    return new LoxFunction(this.declaration, environment);
+    return new LoxFunction(this.declaration, environment, this.isInitializer);
   }
 }

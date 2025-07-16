@@ -11,12 +11,20 @@ class LoxClass extends types_1.LoxCallable {
         this.name = name;
         this.methods = methods;
     }
-    call() {
+    call(interpreter, ...argArray) {
         const instance = new LoxInstance(this);
+        const initializer = this.findMethod('init');
+        if (initializer) {
+            initializer.bind(instance).call(interpreter, ...argArray);
+        }
         return instance;
     }
     arity() {
-        return 0;
+        const initializer = this.findMethod('init');
+        if (!initializer) {
+            return 0;
+        }
+        return initializer.arity();
     }
     toString() {
         return this.name;

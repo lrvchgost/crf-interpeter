@@ -170,29 +170,33 @@
 // print c.name;
 
 class Bacon {
+  init(initValue) {
+    this.taste = initValue;
+  }
+
   eat() {
     print "Crunch crunch crunch! this " + this.taste + " bacon";
+    return this;
   }
-  change() {
-    this.taste = "hey";
+
+  change(value) {
+    this.taste = value;
+    return this;
   }
 }
 
-var bacon = Bacon();
-
-bacon.taste = "cool";
+var bacon = Bacon("start");
 
 bacon.eat();
-bacon.change();
-bacon.eat();
+bacon.change("some");
+bacon.eat().change("some 2").eat();
 
 var a = bacon.eat;
 
 a();
 
-var b = Bacon();
+var b = Bacon("end");
 
-b.taste = "new";
 b.eat();
 
 b.eat = a;

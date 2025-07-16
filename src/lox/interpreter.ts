@@ -303,7 +303,7 @@ export class Interpreter implements Visitor<Value> {
     const methods = new Map();
 
     for (const method of stmt.methods) {
-      const fn = new LoxFunction(method, this.environment);
+      const fn = new LoxFunction(method, this.environment, method.name.lexeme === 'init');
       methods.set(method.name.lexeme, fn);
     }
 
@@ -315,7 +315,7 @@ export class Interpreter implements Visitor<Value> {
   }
 
   visitFunction(stmt: Function) {
-    const fn = new LoxFunction(stmt, this.environment);
+    const fn = new LoxFunction(stmt, this.environment, false);
 
     this.environment.define(stmt.name.lexeme, fn);
 

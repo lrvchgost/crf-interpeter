@@ -8,6 +8,7 @@ var FunctionType;
     FunctionType[FunctionType["None"] = 0] = "None";
     FunctionType[FunctionType["Function"] = 1] = "Function";
     FunctionType[FunctionType["Method"] = 2] = "Method";
+    FunctionType[FunctionType["Initializer"] = 3] = "Initializer";
 })(FunctionType || (FunctionType = {}));
 var ClassType;
 (function (ClassType) {
@@ -134,7 +135,10 @@ class Resolver {
         this.beginScope();
         this.scopes.peek().set("this", true);
         for (const method of stmt.methods) {
-            const declaration = FunctionType.Method;
+            let declaration = FunctionType.Method;
+            if (method.name.lexeme === "init") {
+                declaration = FunctionType.Initializer;
+            }
             this.resolveFunction(method, declaration);
         }
         this.endScope();
@@ -175,6 +179,9 @@ class Resolver {
             Lox_1.Lox.error(stmt.keyword, "Can't return from top level code.");
         }
         if (stmt.value) {
+            if (this.currentFunction === FunctionType.Initializer) {
+                Lox_1.Lox.error(stmt.keyword, "Can't return a value from an initializer.");
+            }
             this.resolve(stmt.value);
         }
     }

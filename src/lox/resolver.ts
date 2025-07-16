@@ -33,6 +33,7 @@ enum FunctionType {
   None = 0,
   Function = 1,
   Method = 2,
+  Initializer = 3,
 }
 
 enum ClassType {
@@ -198,7 +199,10 @@ export class Resolver implements Visitor<Value> {
     this.scopes.peek().set("this", true);
 
     for (const method of stmt.methods) {
-      const declaration = FunctionType.Method;
+      let declaration = FunctionType.Method;
+      if (method.name.lexeme === "init") {
+        declaration = FunctionType.Initializer;
+      }
       this.resolveFunction(method, declaration);
     }
 
@@ -252,6 +256,10 @@ export class Resolver implements Visitor<Value> {
     }
 
     if (stmt.value) {
+      if(this.currentFunction === FunctionType.Initializer) {
+        Lox.error(stmt.keyword, "Can't return a value from an initializer.");
+      }
+
       this.resolve(stmt.value);
     }
   }

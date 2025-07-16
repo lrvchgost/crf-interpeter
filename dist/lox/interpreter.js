@@ -225,7 +225,7 @@ class Interpreter {
         this.environment.define(stmt.name.lexeme, null);
         const methods = new Map();
         for (const method of stmt.methods) {
-            const fn = new LoxFunction_1.LoxFunction(method, this.environment);
+            const fn = new LoxFunction_1.LoxFunction(method, this.environment, method.name.lexeme === 'init');
             methods.set(method.name.lexeme, fn);
         }
         const kclass = new LoxClass_1.LoxClass(stmt.name.lexeme, methods);
@@ -233,7 +233,7 @@ class Interpreter {
         return null;
     }
     visitFunction(stmt) {
-        const fn = new LoxFunction_1.LoxFunction(stmt, this.environment);
+        const fn = new LoxFunction_1.LoxFunction(stmt, this.environment, false);
         this.environment.define(stmt.name.lexeme, fn);
         return null;
     }
