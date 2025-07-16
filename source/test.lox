@@ -149,22 +149,52 @@
 //   SayHi();
 // }
 
-class MySuperClass {}
+// class MySuperClass {}
+// 
+// var a = MySuperClass();
+// var b = MySuperClass();
+// var c = MySuperClass();
+// 
+// a.name = b;
+// b.name = c;
+// c.name = "c";
+// 
+// print a.name.name.name;
+// print a.name;
+// print b.name;
+// print c.name;
+// 
+// a.name.name.name = "hello";
+// 
+// print a.name.name.name;
+// print c.name;
 
-var a = MySuperClass();
-var b = MySuperClass();
-var c = MySuperClass();
+class Bacon {
+  eat() {
+    print "Crunch crunch crunch! this " + this.taste + " bacon";
+  }
+  change() {
+    this.taste = "hey";
+  }
+}
 
-a.name = b;
-b.name = c;
-c.name = "c";
+var bacon = Bacon();
 
-print a.name.name.name;
-print a.name;
-print b.name;
-print c.name;
+bacon.taste = "cool";
 
-a.name.name.name = "hello";
+bacon.eat();
+bacon.change();
+bacon.eat();
 
-print a.name.name.name;
-print c.name;
+var a = bacon.eat;
+
+a();
+
+var b = Bacon();
+
+b.taste = "new";
+b.eat();
+
+b.eat = a;
+
+b.eat();

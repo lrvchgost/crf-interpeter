@@ -126,7 +126,7 @@ class Interpreter {
         return null;
     }
     visitExpression(stmt) {
-        this.evaluate(stmt.expression);
+        return this.evaluate(stmt.expression);
     }
     visitPrint(stmt) {
         const expression = this.evaluate(stmt.expression);
@@ -187,11 +187,10 @@ class Interpreter {
     }
     visitWhile(stmt) {
         while (Boolean(this.evaluate(stmt.condition))) {
-            this.evaluate(stmt.body);
+            this.execute(stmt.body);
         }
     }
     visitSet(expr) {
-        debugger;
         const object = this.evaluate(expr.object);
         if (!(object instanceof LoxClass_1.LoxInstance)) {
             throw new error_1.RuntimeError(expr.name, "Only instances have fields.");
@@ -224,7 +223,12 @@ class Interpreter {
     }
     visitClass(stmt) {
         this.environment.define(stmt.name.lexeme, null);
-        const kclass = new LoxClass_1.LoxClass(stmt.name.lexeme);
+        const methods = new Map();
+        for (const method of stmt.methods) {
+            const fn = new LoxFunction_1.LoxFunction(method, this.environment);
+            methods.set(method.name.lexeme, fn);
+        }
+        const kclass = new LoxClass_1.LoxClass(stmt.name.lexeme, methods);
         this.environment.assign(stmt.name, kclass);
         return null;
     }
@@ -239,6 +243,9 @@ class Interpreter {
             value = this.evaluate(stmt.value);
         }
         throw new ReturnTrhow_1.ReturnTrhow(value);
+    }
+    visitThis(expr) {
+        return this.lookUpVariable(expr.keyword, expr);
     }
     evaluate(expr) {
         return expr.visit(this);
@@ -264,7 +271,7 @@ class Interpreter {
     interpret(statemets) {
         try {
             for (let statement of statemets) {
-                this.evaluate(statement);
+                this.execute(statement);
             }
         }
         catch (error) {

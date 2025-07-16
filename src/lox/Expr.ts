@@ -12,6 +12,7 @@ export type Visitor<T> = {
 	visitCall: (callNode: Call) => T;
 	visitGet: (getNode: Get) => T;
 	visitSet: (setNode: Set) => T;
+	visitThis: (thisNode: This) => T;
 	visitBlock: (blockNode: Block) => T;
 	visitExpression: (expressionNode: Expression) => T;
 	visitPrint: (printNode: Print) => T;
@@ -34,7 +35,7 @@ export abstract class StmtBase extends AST {
 export abstract class ExprBase extends AST {
 }
 
-export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical | Call | Get | Set;
+export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical | Call | Get | Set | This;
 
 export type Stmt = Block | Expression | Print | Return | Var | If | While | Function | Class;
 
@@ -198,6 +199,20 @@ export class Set extends ExprBase {
 
     visit<T>(visitor: Visitor<T>) {
         return visitor.visitSet(this);
+    }
+}
+
+export class This extends ExprBase {
+	keyword: Token;
+
+	constructor(keyword: Token) {
+		super();
+
+		this.keyword = keyword;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitThis(this);
     }
 }
 

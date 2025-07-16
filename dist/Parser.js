@@ -209,6 +209,9 @@ class Parser {
         if (this.match(TokenType_1.TokenType.NUMBER, TokenType_1.TokenType.STRING)) {
             return new Expr_1.Literal(this.previous().literal);
         }
+        if (this.match(TokenType_1.TokenType.THIS)) {
+            return new Expr_1.This(this.previous());
+        }
         if (this.match(TokenType_1.TokenType.IDENTIFIER)) {
             return new Expr_1.Variable(this.previous());
         }

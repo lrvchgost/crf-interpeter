@@ -96,7 +96,8 @@ const exprConfig = {
         "Logical  = left: Expr, operator: Token, right: Expr",
         "Call     = calle: Expr, paren: Token, args: Expr[]",
         "Get      = object: Expr, name: Token",
-        "Set      = object: Expr, name: Token, value: Expr"
+        "Set      = object: Expr, name: Token, value: Expr",
+        "This     = keyword: Token"
     ],
 };
 const stmtConfig = {

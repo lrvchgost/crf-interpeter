@@ -7,7 +7,13 @@ var FunctionType;
 (function (FunctionType) {
     FunctionType[FunctionType["None"] = 0] = "None";
     FunctionType[FunctionType["Function"] = 1] = "Function";
+    FunctionType[FunctionType["Method"] = 2] = "Method";
 })(FunctionType || (FunctionType = {}));
+var ClassType;
+(function (ClassType) {
+    ClassType[ClassType["None"] = 0] = "None";
+    ClassType[ClassType["Class"] = 2] = "Class";
+})(ClassType || (ClassType = {}));
 class Scopes {
     array = [];
     push(scope) {
@@ -34,6 +40,7 @@ class Resolver {
     interpreter;
     scopes = new Scopes();
     currentFunction = FunctionType.None;
+    currentClass = ClassType.None;
     constructor(interpreter) {
         this.interpreter = interpreter;
     }
@@ -94,6 +101,12 @@ class Resolver {
         }
         this.resolveLocal(expr, expr.name);
     }
+    visitThis(expr) {
+        if (this.currentClass === ClassType.None) {
+            Lox_1.Lox.error(expr.keyword, "Can't use 'this' outside of a class.");
+        }
+        this.resolveLocal(expr, expr.keyword);
+    }
     resolveLocal(expr, name) {
         for (let i = this.scopes.size() - 1; i >= 0; i--) {
             if (this.scopes.get(i)?.has(name.lexeme)) {
@@ -114,8 +127,18 @@ class Resolver {
         this.resolve(expr.object);
     }
     visitClass(stmt) {
+        const enclosingClass = this.currentClass;
+        this.currentClass = ClassType.Class;
         this.declare(stmt.name);
         this.define(stmt.name);
+        this.beginScope();
+        this.scopes.peek().set("this", true);
+        for (const method of stmt.methods) {
+            const declaration = FunctionType.Method;
+            this.resolveFunction(method, declaration);
+        }
+        this.endScope();
+        this.currentClass = enclosingClass;
     }
     visitFunction(stmt) {
         this.declare(stmt.name);

@@ -1,19 +1,19 @@
 import { RuntimeError } from "./error";
-import { Interpreter } from "./interpreter";
+import { LoxFunction } from "./LoxFunction";
 import { Token } from "./Token";
 import { LoxCallable, Value } from "./types";
 
 export class LoxClass extends LoxCallable {
   name: string;
+  methods = new Map<string, LoxFunction>();
 
-  constructor(name: string) {
+  constructor(name: string, methods: Map<string, LoxFunction>) {
     super();
     this.name = name;
+    this.methods = methods;
   }
 
-  call(interpreter: Interpreter, ...argArray: Value[]) {
-    console.log("hey", interpreter);
-    console.log("hey", argArray);
+  call() {
     const instance = new LoxInstance(this);
     return instance;
   }
@@ -24,6 +24,14 @@ export class LoxClass extends LoxCallable {
 
   toString() {
     return this.name;
+  }
+
+  findMethod(name: string) {
+    if (this.methods.has(name)) {
+      return this.methods.get(name);
+    }
+
+    return null;
   }
 }
 
@@ -44,11 +52,18 @@ export class LoxInstance {
       return this.fields.get(name.lexeme);
     }
 
+    const method = this.kclass.findMethod(name.lexeme);
+
+    if (method) {
+      return method.bind(this);
+    }
+
+
     throw new RuntimeError(
       name,
       "Undefined property '" +
         name.lexeme +
-        "'. Accessing on the instance of class '" +
+        "'. Accessing on an instance of the class '" +
         this.kclass.name +
         "'."
     );

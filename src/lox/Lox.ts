@@ -125,7 +125,7 @@ export class Lox {
       return;
     }
 
-    console.log(this.interpreter.locals);
+    // console.log(this.interpreter.locals);
 
     this.interpreter.interpret(statements);
   }

@@ -2,7 +2,8 @@ import { LoxCallable, Value } from "./types";
 import { Function } from "./Expr";
 import { Interpreter } from "./interpreter";
 import { Envirnonment } from "./Environment";
-import {ReturnTrhow} from "./ReturnTrhow";
+import { ReturnTrhow } from "./ReturnTrhow";
+import {LoxInstance} from "./LoxClass";
 
 export class LoxFunction extends LoxCallable {
   private declaration: Function;
@@ -37,5 +38,13 @@ export class LoxFunction extends LoxCallable {
 
   toString() {
     return "<fn " + this.declaration.name.lexeme + ">";
+  }
+  
+  bind(instance: LoxInstance) {
+    const environment = new Envirnonment(this.closure);
+
+    environment.define('this', instance);
+
+    return new LoxFunction(this.declaration, environment);
   }
 }

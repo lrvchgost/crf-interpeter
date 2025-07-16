@@ -5,13 +5,13 @@ const error_1 = require("./error");
 const types_1 = require("./types");
 class LoxClass extends types_1.LoxCallable {
     name;
-    constructor(name) {
+    methods = new Map();
+    constructor(name, methods) {
         super();
         this.name = name;
+        this.methods = methods;
     }
-    call(interpreter, ...argArray) {
-        console.log("hey", interpreter);
-        console.log("hey", argArray);
+    call() {
         const instance = new LoxInstance(this);
         return instance;
     }
@@ -20,6 +20,12 @@ class LoxClass extends types_1.LoxCallable {
     }
     toString() {
         return this.name;
+    }
+    findMethod(name) {
+        if (this.methods.has(name)) {
+            return this.methods.get(name);
+        }
+        return null;
     }
 }
 exports.LoxClass = LoxClass;
@@ -36,9 +42,13 @@ class LoxInstance {
         if (this.fields.has(name.lexeme)) {
             return this.fields.get(name.lexeme);
         }
+        const method = this.kclass.findMethod(name.lexeme);
+        if (method) {
+            return method.bind(this);
+        }
         throw new error_1.RuntimeError(name, "Undefined property '" +
             name.lexeme +
-            "'. Accessing on the instance of class '" +
+            "'. Accessing on an instance of the class '" +
             this.kclass.name +
             "'.");
     }

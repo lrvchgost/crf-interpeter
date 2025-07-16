@@ -20,6 +20,7 @@ import {
   Class,
   Get,
   Set,
+  This,
 } from "./lox/Expr";
 import { Lox } from "./lox/Lox";
 // import { Reporter } from "./lox/Reporter";
@@ -310,6 +311,10 @@ export class Parser {
 
     if (this.match(TokenType.NUMBER, TokenType.STRING)) {
       return new Literal(this.previous().literal);
+    }
+
+    if (this.match(TokenType.THIS)) {
+      return new This(this.previous());
     }
 
     if (this.match(TokenType.IDENTIFIER)) {

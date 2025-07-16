@@ -23,9 +23,10 @@ import {
   Class,
   Get,
   Set,
+  This,
 } from "./Expr";
 import { Lox } from "./Lox";
-import {LoxClass, LoxInstance} from "./LoxClass";
+import { LoxClass, LoxInstance } from "./LoxClass";
 import { LoxClock } from "./LoxClock";
 import { LoxFunction } from "./LoxFunction";
 import { ReturnTrhow } from "./ReturnTrhow";
@@ -171,8 +172,8 @@ export class Interpreter implements Visitor<Value> {
     return null;
   }
 
-  visitExpression(stmt: Expression): void {
-    this.evaluate(stmt.expression);
+  visitExpression(stmt: Expression) {
+    return this.evaluate(stmt.expression);
   }
 
   visitPrint(stmt: Print): void {
@@ -244,12 +245,11 @@ export class Interpreter implements Visitor<Value> {
 
   visitWhile(stmt: While) {
     while (Boolean(this.evaluate(stmt.condition))) {
-      this.evaluate(stmt.body);
+      this.execute(stmt.body);
     }
   }
 
   visitSet(expr: Set) {
-    debugger;
     const object = this.evaluate(expr.object);
 
     if (!(object instanceof LoxInstance)) {
@@ -300,8 +300,14 @@ export class Interpreter implements Visitor<Value> {
 
   visitClass(stmt: Class) {
     this.environment.define(stmt.name.lexeme, null);
+    const methods = new Map();
 
-    const kclass = new LoxClass(stmt.name.lexeme);
+    for (const method of stmt.methods) {
+      const fn = new LoxFunction(method, this.environment);
+      methods.set(method.name.lexeme, fn);
+    }
+
+    const kclass = new LoxClass(stmt.name.lexeme, methods);
 
     this.environment.assign(stmt.name, kclass);
 
@@ -326,7 +332,11 @@ export class Interpreter implements Visitor<Value> {
     throw new ReturnTrhow(value);
   }
 
-  evaluate(expr: Expr | Stmt): Value {
+  visitThis(expr: This) {
+    return this.lookUpVariable(expr.keyword, expr);
+  }
+
+  evaluate(expr: Expr): Value {
     return expr.visit(this);
   }
 
@@ -355,7 +365,7 @@ export class Interpreter implements Visitor<Value> {
   interpret(statemets: Stmt[]) {
     try {
       for (let statement of statemets) {
-        this.evaluate(statement);
+        this.execute(statement);
       }
     } catch (error) {
       const e = error as RuntimeError;

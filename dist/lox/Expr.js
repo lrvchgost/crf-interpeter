@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Class = exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.Set = exports.Get = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = exports.ExprBase = exports.StmtBase = void 0;
+exports.Class = exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.This = exports.Set = exports.Get = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = exports.ExprBase = exports.StmtBase = void 0;
 class AST {
 }
 class StmtBase extends AST {
@@ -141,6 +141,17 @@ class Set extends ExprBase {
     }
 }
 exports.Set = Set;
+class This extends ExprBase {
+    keyword;
+    constructor(keyword) {
+        super();
+        this.keyword = keyword;
+    }
+    visit(visitor) {
+        return visitor.visitThis(this);
+    }
+}
+exports.This = This;
 class Block extends StmtBase {
     statements;
     constructor(statements) {

@@ -22,6 +22,7 @@ import {
   Class,
   Get,
   Set,
+  This,
 } from "./Expr";
 import { Interpreter } from "./interpreter";
 import { Lox } from "./Lox";
@@ -31,6 +32,12 @@ import { Value } from "./types";
 enum FunctionType {
   None = 0,
   Function = 1,
+  Method = 2,
+}
+
+enum ClassType {
+  None = 0,
+  Class = 2,
 }
 
 class Scopes {
@@ -66,6 +73,7 @@ export class Resolver implements Visitor<Value> {
   interpreter: Interpreter;
   scopes: Scopes = new Scopes();
   currentFunction = FunctionType.None;
+  currentClass = ClassType.None;
 
   constructor(interpreter: Interpreter) {
     this.interpreter = interpreter;
@@ -147,6 +155,14 @@ export class Resolver implements Visitor<Value> {
     this.resolveLocal(expr, expr.name);
   }
 
+  visitThis(expr: This) {
+    if (this.currentClass === ClassType.None) {
+      Lox.error(expr.keyword, "Can't use 'this' outside of a class.");
+    }
+
+    this.resolveLocal(expr, expr.keyword);
+  }
+
   resolveLocal(expr: Expr, name: Token) {
     for (let i = this.scopes.size() - 1; i >= 0; i--) {
       if (this.scopes.get(i)?.has(name.lexeme)) {
@@ -171,8 +187,23 @@ export class Resolver implements Visitor<Value> {
   }
 
   visitClass(stmt: Class) {
+    const enclosingClass = this.currentClass;
+    this.currentClass = ClassType.Class;
+
     this.declare(stmt.name);
     this.define(stmt.name);
+
+    this.beginScope();
+
+    this.scopes.peek().set("this", true);
+
+    for (const method of stmt.methods) {
+      const declaration = FunctionType.Method;
+      this.resolveFunction(method, declaration);
+    }
+
+    this.endScope();
+    this.currentClass = enclosingClass;
   }
 
   visitFunction(stmt: Function) {

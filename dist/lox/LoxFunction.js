@@ -31,6 +31,11 @@ class LoxFunction extends types_1.LoxCallable {
     toString() {
         return "<fn " + this.declaration.name.lexeme + ">";
     }
+    bind(instance) {
+        const environment = new Environment_1.Envirnonment(this.closure);
+        environment.define('this', instance);
+        return new LoxFunction(this.declaration, environment);
+    }
 }
 exports.LoxFunction = LoxFunction;
 //# sourceMappingURL=LoxFunction.js.map

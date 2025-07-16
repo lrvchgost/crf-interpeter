@@ -99,7 +99,6 @@ class Lox {
         if (Lox.hadError) {
             return;
         }
-        console.log(this.interpreter.locals);
         this.interpreter.interpret(statements);
     }
     static runtimeError(error) {
