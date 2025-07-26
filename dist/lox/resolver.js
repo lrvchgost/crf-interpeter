@@ -14,6 +14,7 @@ var ClassType;
 (function (ClassType) {
     ClassType[ClassType["None"] = 0] = "None";
     ClassType[ClassType["Class"] = 2] = "Class";
+    ClassType[ClassType["Subclass"] = 3] = "Subclass";
 })(ClassType || (ClassType = {}));
 class Scopes {
     array = [];
@@ -127,11 +128,31 @@ class Resolver {
         this.resolve(expr.value);
         this.resolve(expr.object);
     }
+    visitSuper(expr) {
+        if (this.currentClass === ClassType.None) {
+            Lox_1.Lox.error(expr.keyword, "Can't use 'super' outside of a class.");
+        }
+        else if (this.currentClass !== ClassType.Subclass) {
+            Lox_1.Lox.error(expr.keyword, "Can't use 'super' in a class with no superclass.");
+        }
+        this.resolveLocal(expr, expr.keyword);
+    }
     visitClass(stmt) {
         const enclosingClass = this.currentClass;
         this.currentClass = ClassType.Class;
         this.declare(stmt.name);
+        if (stmt.superclass && stmt.name.lexeme === stmt.superclass.name.lexeme) {
+            Lox_1.Lox.error(stmt.superclass.name, "A class can't inherit from itself.");
+        }
         this.define(stmt.name);
+        if (stmt.superclass) {
+            this.currentClass = ClassType.Subclass;
+            this.resolve(stmt.superclass);
+        }
+        if (stmt.superclass) {
+            this.beginScope();
+            this.scopes.peek().set("super", true);
+        }
         this.beginScope();
         this.scopes.peek().set("this", true);
         for (const method of stmt.methods) {
@@ -142,6 +163,9 @@ class Resolver {
             this.resolveFunction(method, declaration);
         }
         this.endScope();
+        if (stmt.superclass) {
+            this.endScope();
+        }
         this.currentClass = enclosingClass;
     }
     visitFunction(stmt) {

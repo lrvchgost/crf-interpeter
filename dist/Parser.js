@@ -70,13 +70,18 @@ class Parser {
     }
     classDeclaration() {
         const name = this.consume(TokenType_1.TokenType.IDENTIFIER, "Expect class name.");
+        let supperClass = undefined;
+        if (this.match(TokenType_1.TokenType.LESS)) {
+            this.consume(TokenType_1.TokenType.IDENTIFIER, "Expect superclass name.");
+            supperClass = new Expr_1.Variable(this.previous());
+        }
         this.consume(TokenType_1.TokenType.LEFT_BRACE, "Expect '{' before class body.");
         const methods = [];
         while (!this.check(TokenType_1.TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
             methods.push(this.function("method"));
         }
         this.consume(TokenType_1.TokenType.RIGHT_BRACE, "Expect '}' after class body.");
-        return new Expr_1.Class(name, methods);
+        return new Expr_1.Class(name, methods, supperClass);
     }
     function(kind) {
         const name = this.consume(TokenType_1.TokenType.IDENTIFIER, "Expect " + kind + " name.");
@@ -208,6 +213,12 @@ class Parser {
         }
         if (this.match(TokenType_1.TokenType.NUMBER, TokenType_1.TokenType.STRING)) {
             return new Expr_1.Literal(this.previous().literal);
+        }
+        if (this.match(TokenType_1.TokenType.SUPER)) {
+            const keyword = this.previous();
+            this.consume(TokenType_1.TokenType.DOT, "Expect '.' after super.");
+            const method = this.consume(TokenType_1.TokenType.IDENTIFIER, "Expect superclass method name.");
+            return new Expr_1.Super(keyword, method);
         }
         if (this.match(TokenType_1.TokenType.THIS)) {
             return new Expr_1.This(this.previous());

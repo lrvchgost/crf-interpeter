@@ -222,15 +222,42 @@ class Interpreter {
         return fn.call(this, ...args);
     }
     visitClass(stmt) {
+        let superclass = undefined;
+        if (stmt.superclass) {
+            superclass = this.evaluate(stmt.superclass);
+            if (!(superclass instanceof LoxClass_1.LoxClass)) {
+                throw new error_1.RuntimeError(stmt.superclass.name, "Superclass must be a class.");
+            }
+        }
         this.environment.define(stmt.name.lexeme, null);
+        if (stmt.superclass) {
+            this.environment = new Environment_1.Envirnonment(this.environment);
+            this.environment.define("super", superclass);
+        }
         const methods = new Map();
         for (const method of stmt.methods) {
-            const fn = new LoxFunction_1.LoxFunction(method, this.environment, method.name.lexeme === 'init');
+            const fn = new LoxFunction_1.LoxFunction(method, this.environment, method.name.lexeme === "init");
             methods.set(method.name.lexeme, fn);
         }
-        const kclass = new LoxClass_1.LoxClass(stmt.name.lexeme, methods);
+        const kclass = new LoxClass_1.LoxClass(stmt.name.lexeme, methods, superclass);
+        if (superclass && this.environment.enclosing) {
+            this.environment = this.environment.enclosing;
+        }
         this.environment.assign(stmt.name, kclass);
         return null;
+    }
+    visitSuper(expr) {
+        const distance = this.locals.get(expr);
+        if (distance !== undefined) {
+            const supperClass = this.environment.getAt(distance, "super");
+            const object = this.environment.getAt(distance - 1, "this");
+            const method = supperClass.findMethod(expr.method.lexeme);
+            if (!method) {
+                throw new error_1.RuntimeError(expr.method, "Undefined property '" + expr.method.lexeme + "'");
+            }
+            return method?.bind(object);
+        }
+        return;
     }
     visitFunction(stmt) {
         const fn = new LoxFunction_1.LoxFunction(stmt, this.environment, false);

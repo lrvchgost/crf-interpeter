@@ -1,5 +1,5 @@
 import { Interpreter } from "./interpreter";
-import { LoxInstance } from "./LoxClass";
+import { LoxInstance, LoxClass } from "./LoxClass";
 
 export type Value =
   | string
@@ -8,6 +8,7 @@ export type Value =
   | null
   | void
   | ILoxCallabel
+  | LoxClass
   | LoxInstance;
 
 export interface ILoxCallabel {

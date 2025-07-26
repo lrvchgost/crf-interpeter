@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Class = exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.This = exports.Set = exports.Get = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = exports.ExprBase = exports.StmtBase = void 0;
+exports.Class = exports.Function = exports.While = exports.If = exports.Var = exports.Return = exports.Print = exports.Expression = exports.Block = exports.Super = exports.This = exports.Set = exports.Get = exports.Call = exports.Logical = exports.Variable = exports.Unary = exports.Literal = exports.Grouping = exports.Binary = exports.Assign = exports.ExprBase = exports.StmtBase = void 0;
 class AST {
 }
 class StmtBase extends AST {
@@ -152,6 +152,19 @@ class This extends ExprBase {
     }
 }
 exports.This = This;
+class Super extends ExprBase {
+    keyword;
+    method;
+    constructor(keyword, method) {
+        super();
+        this.keyword = keyword;
+        this.method = method;
+    }
+    visit(visitor) {
+        return visitor.visitSuper(this);
+    }
+}
+exports.Super = Super;
 class Block extends StmtBase {
     statements;
     constructor(statements) {
@@ -257,10 +270,12 @@ exports.Function = Function;
 class Class extends StmtBase {
     name;
     methods;
-    constructor(name, methods) {
+    superclass;
+    constructor(name, methods, superclass) {
         super();
         this.name = name;
         this.methods = methods;
+        this.superclass = superclass;
     }
     visit(visitor) {
         return visitor.visitClass(this);

@@ -1,5 +1,5 @@
 import { RuntimeError } from "./error";
-import {Interpreter} from "./interpreter";
+import { Interpreter } from "./interpreter";
 import { LoxFunction } from "./LoxFunction";
 import { Token } from "./Token";
 import { LoxCallable, Value } from "./types";
@@ -7,17 +7,23 @@ import { LoxCallable, Value } from "./types";
 export class LoxClass extends LoxCallable {
   name: string;
   methods = new Map<string, LoxFunction>();
+  superclass?: LoxClass;
 
-  constructor(name: string, methods: Map<string, LoxFunction>) {
+  constructor(
+    name: string,
+    methods: Map<string, LoxFunction>,
+    superclass?: LoxClass
+  ) {
     super();
     this.name = name;
     this.methods = methods;
+    this.superclass = superclass;
   }
 
   call(interpreter: Interpreter, ...argArray: Value[]) {
     const instance = new LoxInstance(this);
 
-    const initializer = this.findMethod('init');
+    const initializer = this.findMethod("init");
 
     if (initializer) {
       initializer.bind(instance).call(interpreter, ...argArray);
@@ -27,7 +33,7 @@ export class LoxClass extends LoxCallable {
   }
 
   arity() {
-    const initializer = this.findMethod('init');
+    const initializer = this.findMethod("init");
 
     if (!initializer) {
       return 0;
@@ -39,9 +45,13 @@ export class LoxClass extends LoxCallable {
     return this.name;
   }
 
-  findMethod(name: string) {
+  findMethod(name: string): LoxFunction | undefined | null {
     if (this.methods.has(name)) {
       return this.methods.get(name);
+    }
+
+    if (this.superclass) {
+      return this.superclass.findMethod(name);
     }
 
     return null;
@@ -70,7 +80,6 @@ export class LoxInstance {
     if (method) {
       return method.bind(this);
     }
-
 
     throw new RuntimeError(
       name,

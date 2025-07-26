@@ -24,6 +24,7 @@ import {
   Get,
   Set,
   This,
+  Super,
 } from "./Expr";
 import { Lox } from "./Lox";
 import { LoxClass, LoxInstance } from "./LoxClass";
@@ -299,19 +300,71 @@ export class Interpreter implements Visitor<Value> {
   }
 
   visitClass(stmt: Class) {
+    let superclass: LoxClass | undefined = undefined;
+
+    if (stmt.superclass) {
+      superclass = this.evaluate(stmt.superclass) as LoxClass;
+
+      if (!(superclass instanceof LoxClass)) {
+        throw new RuntimeError(
+          stmt.superclass.name,
+          "Superclass must be a class."
+        );
+      }
+    }
+
     this.environment.define(stmt.name.lexeme, null);
+
+    if (stmt.superclass) {
+      this.environment = new Envirnonment(this.environment);
+      this.environment.define("super", superclass);
+    }
+
     const methods = new Map();
 
     for (const method of stmt.methods) {
-      const fn = new LoxFunction(method, this.environment, method.name.lexeme === 'init');
+      const fn = new LoxFunction(
+        method,
+        this.environment,
+        method.name.lexeme === "init"
+      );
       methods.set(method.name.lexeme, fn);
     }
 
-    const kclass = new LoxClass(stmt.name.lexeme, methods);
+    const kclass = new LoxClass(stmt.name.lexeme, methods, superclass);
+
+    if (superclass && this.environment.enclosing) {
+      this.environment = this.environment.enclosing;
+    }
 
     this.environment.assign(stmt.name, kclass);
 
     return null;
+  }
+
+  visitSuper(expr: Super) {
+    const distance = this.locals.get(expr);
+
+    if (distance !== undefined) {
+      const supperClass = this.environment.getAt(distance, "super") as LoxClass;
+
+      const object = this.environment.getAt(
+        distance - 1,
+        "this"
+      ) as LoxInstance;
+
+      const method = supperClass.findMethod(expr.method.lexeme);
+
+      if (!method) {
+        throw new RuntimeError(
+          expr.method,
+          "Undefined property '" + expr.method.lexeme + "'"
+        );
+      }
+      return method?.bind(object);
+    }
+
+    return;
   }
 
   visitFunction(stmt: Function) {

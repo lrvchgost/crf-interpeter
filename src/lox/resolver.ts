@@ -23,6 +23,7 @@ import {
   Get,
   Set,
   This,
+  Super,
 } from "./Expr";
 import { Interpreter } from "./interpreter";
 import { Lox } from "./Lox";
@@ -39,6 +40,7 @@ enum FunctionType {
 enum ClassType {
   None = 0,
   Class = 2,
+  Subclass = 3,
 }
 
 class Scopes {
@@ -187,15 +189,42 @@ export class Resolver implements Visitor<Value> {
     this.resolve(expr.object);
   }
 
+  visitSuper(expr: Super) {
+    if (this.currentClass === ClassType.None) {
+      Lox.error(expr.keyword, "Can't use 'super' outside of a class.");
+    } else if (this.currentClass !== ClassType.Subclass) {
+      Lox.error(
+        expr.keyword,
+        "Can't use 'super' in a class with no superclass."
+      );
+    }
+
+    this.resolveLocal(expr, expr.keyword);
+  }
+
   visitClass(stmt: Class) {
     const enclosingClass = this.currentClass;
     this.currentClass = ClassType.Class;
 
     this.declare(stmt.name);
+
+    if (stmt.superclass && stmt.name.lexeme === stmt.superclass.name.lexeme) {
+      Lox.error(stmt.superclass.name, "A class can't inherit from itself.");
+    }
+
     this.define(stmt.name);
 
-    this.beginScope();
+    if (stmt.superclass) {
+      this.currentClass = ClassType.Subclass;
+      this.resolve(stmt.superclass);
+    }
 
+    if (stmt.superclass) {
+      this.beginScope();
+      this.scopes.peek().set("super", true);
+    }
+
+    this.beginScope();
     this.scopes.peek().set("this", true);
 
     for (const method of stmt.methods) {
@@ -207,6 +236,11 @@ export class Resolver implements Visitor<Value> {
     }
 
     this.endScope();
+
+    if (stmt.superclass) {
+      this.endScope();
+    }
+
     this.currentClass = enclosingClass;
   }
 
@@ -256,7 +290,7 @@ export class Resolver implements Visitor<Value> {
     }
 
     if (stmt.value) {
-      if(this.currentFunction === FunctionType.Initializer) {
+      if (this.currentFunction === FunctionType.Initializer) {
         Lox.error(stmt.keyword, "Can't return a value from an initializer.");
       }
 

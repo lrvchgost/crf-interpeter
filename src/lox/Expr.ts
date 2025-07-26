@@ -13,6 +13,7 @@ export type Visitor<T> = {
 	visitGet: (getNode: Get) => T;
 	visitSet: (setNode: Set) => T;
 	visitThis: (thisNode: This) => T;
+	visitSuper: (superNode: Super) => T;
 	visitBlock: (blockNode: Block) => T;
 	visitExpression: (expressionNode: Expression) => T;
 	visitPrint: (printNode: Print) => T;
@@ -35,7 +36,7 @@ export abstract class StmtBase extends AST {
 export abstract class ExprBase extends AST {
 }
 
-export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical | Call | Get | Set | This;
+export type Expr = Assign | Binary | Grouping | Literal | Unary | Variable | Logical | Call | Get | Set | This | Super;
 
 export type Stmt = Block | Expression | Print | Return | Var | If | While | Function | Class;
 
@@ -216,6 +217,22 @@ export class This extends ExprBase {
     }
 }
 
+export class Super extends ExprBase {
+	keyword: Token;
+	method: Token;
+
+	constructor(keyword: Token, method: Token) {
+		super();
+
+		this.keyword = keyword;
+		this.method = method;
+	}
+
+    visit<T>(visitor: Visitor<T>) {
+        return visitor.visitSuper(this);
+    }
+}
+
 
 export class Block extends StmtBase {
 	statements: Stmt[];
@@ -346,12 +363,14 @@ export class Function extends StmtBase {
 export class Class extends StmtBase {
 	name: Token;
 	methods: Function[];
+	superclass?: Variable;
 
-	constructor(name: Token, methods: Function[]) {
+	constructor(name: Token, methods: Function[], superclass?: Variable) {
 		super();
 
 		this.name = name;
 		this.methods = methods;
+		this.superclass = superclass;
 	}
 
     visit<T>(visitor: Visitor<T>) {

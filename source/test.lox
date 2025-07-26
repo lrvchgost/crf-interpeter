@@ -190,7 +190,7 @@ var bacon = Bacon("start");
 bacon.eat();
 bacon.change("some");
 bacon.eat().change("some 2").eat();
-
+ 
 var a = bacon.eat;
 
 a();
@@ -202,3 +202,26 @@ b.eat();
 b.eat = a;
 
 b.eat();
+
+class A {
+  hello() {
+    print "Hello A";
+  }
+}
+
+class B < A {
+  hello() {
+    print "Hello B";
+  }
+
+  test() {
+    super.hello();
+  }
+}
+
+class C < B {}
+
+var c = C();
+
+c.test();
+c.hello();

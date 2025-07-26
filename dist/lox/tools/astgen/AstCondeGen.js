@@ -97,7 +97,8 @@ const exprConfig = {
         "Call     = calle: Expr, paren: Token, args: Expr[]",
         "Get      = object: Expr, name: Token",
         "Set      = object: Expr, name: Token, value: Expr",
-        "This     = keyword: Token"
+        "This     = keyword: Token",
+        "Super    = keyword: Token, method: Token"
     ],
 };
 const stmtConfig = {
@@ -112,7 +113,7 @@ const stmtConfig = {
         "If         = condition: Expr, thenBranch: Stmt, elseBranch?: Stmt",
         "While      = condition: Expr, body: Stmt",
         "Function   = name: Token, params: Token[], body: Stmt[]",
-        "Class      = name: Token, methods: Function[]",
+        "Class      = name: Token, methods: Function[], superclass?: Variable",
     ],
 };
 defineAst([exprConfig, stmtConfig]);

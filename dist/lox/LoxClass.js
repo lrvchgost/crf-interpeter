@@ -6,21 +6,23 @@ const types_1 = require("./types");
 class LoxClass extends types_1.LoxCallable {
     name;
     methods = new Map();
-    constructor(name, methods) {
+    superclass;
+    constructor(name, methods, superclass) {
         super();
         this.name = name;
         this.methods = methods;
+        this.superclass = superclass;
     }
     call(interpreter, ...argArray) {
         const instance = new LoxInstance(this);
-        const initializer = this.findMethod('init');
+        const initializer = this.findMethod("init");
         if (initializer) {
             initializer.bind(instance).call(interpreter, ...argArray);
         }
         return instance;
     }
     arity() {
-        const initializer = this.findMethod('init');
+        const initializer = this.findMethod("init");
         if (!initializer) {
             return 0;
         }
@@ -32,6 +34,9 @@ class LoxClass extends types_1.LoxCallable {
     findMethod(name) {
         if (this.methods.has(name)) {
             return this.methods.get(name);
+        }
+        if (this.superclass) {
+            return this.superclass.findMethod(name);
         }
         return null;
     }
